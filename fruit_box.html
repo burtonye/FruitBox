@@ -13,7 +13,7 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #1f5f3b;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -42,24 +42,12 @@
             border-radius: 20px;
         }
 
-        .game-info .timer {
-            font-variant-numeric: tabular-nums;
-        }
-
-        .game-info .timer.warning {
-            background: rgba(231, 76, 60, 0.6);
-            animation: pulse 1s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-
         .controls {
             margin-bottom: 15px;
             display: flex;
-            gap: 10px;
+            gap: 12px;
+            align-items: center;
+            color: white;
         }
 
         button {
@@ -187,40 +175,6 @@
             opacity: 0.9;
         }
 
-        .overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s;
-        }
-
-        .overlay.show {
-            opacity: 1;
-            pointer-events: all;
-        }
-
-        .overlay h2 {
-            color: white;
-            font-size: 48px;
-            margin-bottom: 20px;
-        }
-
-        .overlay p {
-            color: white;
-            font-size: 24px;
-            margin-bottom: 30px;
-        }
-
         .current-selection {
             position: fixed;
             bottom: 20px;
@@ -240,75 +194,40 @@
             opacity: 1;
         }
 
-        /* Start Screen Styles */
-        .start-screen {
-            text-align: center;
-        }
-
-        .start-screen h2 {
-            font-size: 56px;
-            margin-bottom: 10px;
-            text-shadow: 3px 3px 6px rgba(0,0,0,0.4);
-        }
-
-        .start-screen .subtitle {
-            font-size: 20px;
-            margin-bottom: 40px;
-            opacity: 0.9;
-        }
-
-        .target-selector {
-            margin-bottom: 40px;
-            text-align: center;
-        }
-
-        .target-selector label {
-            display: block;
-            color: white;
-            font-size: 22px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
         .target-input {
-            width: 150px;
-            height: 80px;
-            font-size: 48px;
+            width: 90px;
+            height: 40px;
+            font-size: 20px;
             font-weight: bold;
             text-align: center;
-            border: 3px solid #FFD700;
-            border-radius: 15px;
+            border: 2px solid #FFD700;
+            border-radius: 10px;
             background: rgba(255,255,255,0.1);
             color: #FFD700;
             outline: none;
-            transition: all 0.2s;
         }
 
-        .target-input:focus {
-            background: rgba(255,255,255,0.2);
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
-        }
-
-        .target-input::placeholder {
-            color: rgba(255, 215, 0, 0.5);
-        }
-
-        .target-hint {
-            margin-top: 10px;
-            color: rgba(255,255,255,0.6);
+        .light-toggle {
+            display: flex;
+            align-items: center;
+            gap: 6px;
             font-size: 14px;
         }
 
-        .start-btn {
-            font-size: 24px;
-            padding: 15px 50px;
-            background: linear-gradient(135deg, #4CAF50, #45a049);
-            border-radius: 30px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        body.light-colors {
+            background: #4c8b64;
         }
 
-        .start-btn:hover {
-            transform: scale(1.08);
+        body.light-colors .game-container {
+            background: #a87345;
+        }
+
+        body.light-colors .game-board {
+            background: #8b5a2b;
+        }
+
+        body.light-colors .apple {
+            background: radial-gradient(circle at 30% 30%, #ffb3b3, #e57373);
         }
     </style>
 </head>
@@ -317,12 +236,16 @@
     <div class="game-info">
         <span>Score: <strong id="score">0</strong></span>
         <span>Target: <strong id="target-display">10</strong></span>
-        <span class="timer">Time: <strong id="timer-display">2:00</strong></span>
         <span>Apples Left: <strong id="apples-left">0</strong></span>
     </div>
     <div class="controls">
-        <button onclick="showStartScreen()">New Game</button>
-        <button onclick="checkForMoves()">Check Moves</button>
+        <label>Target</label>
+        <input type="number" class="target-input" id="target-input" value="10" min="1" max="100">
+        <button onclick="startGame()">New Game</button>
+        <label class="light-toggle">
+            <input type="checkbox" id="light-toggle">
+            Light Colors
+        </label>
     </div>
     <div class="game-container" id="game-container">
         <div class="game-board" id="game-board"></div>
@@ -336,39 +259,12 @@
 
     <div class="current-selection" id="current-selection">Sum: 0</div>
 
-    <!-- Start Screen -->
-    <div class="overlay show" id="start-screen">
-        <div class="start-screen">
-            <h2>Fruit Box</h2>
-            <p class="subtitle">Select apples that add up to your target number!</p>
-
-            <div class="target-selector">
-                <label>Enter your target sum (1-100):</label>
-                <input type="number" class="target-input" id="target-input" value="10" min="1" max="100">
-                <p class="target-hint">You have 120 seconds to score as many points as possible!</p>
-            </div>
-
-            <button class="start-btn" onclick="startGame()">Start Game</button>
-        </div>
-    </div>
-
-    <!-- Game Over Screen -->
-    <div class="overlay" id="game-over">
-        <h2 id="game-over-title">Game Over!</h2>
-        <p>Final Score: <span id="final-score">0</span></p>
-        <button onclick="showStartScreen()">Play Again</button>
-    </div>
-
     <script>
         const ROWS = 10;
         const COLS = 17;
-        const GAME_DURATION = 120; // seconds
-
         let board = [];
         let score = 0;
         let targetSum = 10;
-        let timeRemaining = GAME_DURATION;
-        let timerInterval = null;
         let isSelecting = false;
         let startX = 0;
         let startY = 0;
@@ -380,61 +276,11 @@
         const selectionBox = document.getElementById('selection-box');
         const scoreDisplay = document.getElementById('score');
         const targetDisplayGame = document.getElementById('target-display');
-        const timerDisplay = document.getElementById('timer-display');
         const applesLeftDisplay = document.getElementById('apples-left');
         const currentSelectionDisplay = document.getElementById('current-selection');
-        const startScreen = document.getElementById('start-screen');
-        const gameOverScreen = document.getElementById('game-over');
-        const gameOverTitle = document.getElementById('game-over-title');
-        const finalScoreDisplay = document.getElementById('final-score');
         const instructionsDisplay = document.getElementById('instructions');
         const targetInput = document.getElementById('target-input');
-
-        function formatTime(seconds) {
-            const mins = Math.floor(seconds / 60);
-            const secs = seconds % 60;
-            return `${mins}:${secs.toString().padStart(2, '0')}`;
-        }
-
-        function updateTimerDisplay() {
-            timerDisplay.textContent = formatTime(timeRemaining);
-            const timerSpan = timerDisplay.closest('span');
-            if (timeRemaining <= 10) {
-                timerSpan.classList.add('warning');
-            } else {
-                timerSpan.classList.remove('warning');
-            }
-        }
-
-        function startTimer() {
-            stopTimer();
-            timeRemaining = GAME_DURATION;
-            updateTimerDisplay();
-
-            timerInterval = setInterval(() => {
-                timeRemaining--;
-                updateTimerDisplay();
-
-                if (timeRemaining <= 0) {
-                    stopTimer();
-                    endGame("Time's Up!");
-                }
-            }, 1000);
-        }
-
-        function stopTimer() {
-            if (timerInterval) {
-                clearInterval(timerInterval);
-                timerInterval = null;
-            }
-        }
-
-        function showStartScreen() {
-            stopTimer();
-            gameOverScreen.classList.remove('show');
-            startScreen.classList.add('show');
-            targetInput.focus();
-        }
+        const lightToggle = document.getElementById('light-toggle');
 
         function startGame() {
             // Get target from input
@@ -444,11 +290,9 @@
             targetSum = inputValue;
             targetInput.value = targetSum;
 
-            startScreen.classList.remove('show');
             targetDisplayGame.textContent = targetSum;
             instructionsDisplay.textContent = `Drag to select apples that sum to exactly ${targetSum}. Get 1 point per apple!`;
             newGame();
-            startTimer();
         }
 
         function generateBoard() {
@@ -597,47 +441,9 @@
             }, 1000);
         }
 
-        function checkForMoves() {
-            // Re-cache positions in case of scroll/resize
-            cacheApplePositions();
-
-            // Check all possible rectangular selections
-            const apples = appleElements.slice();
-            const n = apples.length;
-
-            // Try all combinations of apples that could form a rectangle
-            for (let i = 0; i < n; i++) {
-                for (let j = i; j < n; j++) {
-                    // Define a rectangle from apple i to apple j bounds
-                    const minX = Math.min(apples[i].centerX, apples[j].centerX) - 1;
-                    const maxX = Math.max(apples[i].centerX, apples[j].centerX) + 1;
-                    const minY = Math.min(apples[i].centerY, apples[j].centerY) - 1;
-                    const maxY = Math.max(apples[i].centerY, apples[j].centerY) + 1;
-
-                    const enclosed = getEnclosedApples(minX, minY, maxX, maxY);
-                    if (enclosed.length > 0 && calculateSum(enclosed) === targetSum) {
-                        alert('There are still valid moves available!');
-                        return true;
-                    }
-                }
-            }
-
-            alert('No more valid moves. Game Over!');
-            endGame('No More Moves!');
-            return false;
-        }
-
-        function endGame(reason = 'Game Over!') {
-            stopTimer();
-            gameOverTitle.textContent = reason;
-            finalScoreDisplay.textContent = score;
-            gameOverScreen.classList.add('show');
-        }
-
         function newGame() {
             score = 0;
             scoreDisplay.textContent = score;
-            gameOverScreen.classList.remove('show');
             generateBoard();
             renderBoard();
         }
@@ -645,7 +451,7 @@
         // Mouse events - free drag anywhere
         document.addEventListener('mousedown', (e) => {
             // Don't start selection if clicking on buttons, overlays, or inputs
-            if (e.target.closest('button') || e.target.closest('.overlay.show') || e.target.closest('input')) {
+            if (e.target.closest('button') || e.target.closest('input') || e.target.closest('label')) {
                 return;
             }
 
@@ -718,7 +524,7 @@
         // Touch events for mobile - free drag
         document.addEventListener('touchstart', (e) => {
             // Don't start selection if touching buttons, overlays, or inputs
-            if (e.target.closest('button') || e.target.closest('.overlay.show') || e.target.closest('input')) {
+            if (e.target.closest('button') || e.target.closest('input') || e.target.closest('label')) {
                 return;
             }
 
@@ -811,6 +617,12 @@
                 startGame();
             }
         });
+
+        lightToggle.addEventListener('change', (e) => {
+            document.body.classList.toggle('light-colors', e.target.checked);
+        });
+
+        startGame();
     </script>
 </body>
 </html>
