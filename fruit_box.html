@@ -3,12 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#5d4e8f">
     <title>Fruit Box - Offline</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="icon.svg" type="image/svg+xml">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+        }
+
+        :root {
+            --cell-size: 50px;
         }
 
         body {
@@ -18,7 +25,10 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 20px;
+            padding: calc(20px + env(safe-area-inset-top))
+                calc(20px + env(safe-area-inset-right))
+                calc(20px + env(safe-area-inset-bottom))
+                calc(20px + env(safe-area-inset-left));
             user-select: none;
         }
 
@@ -34,6 +44,8 @@
             margin-bottom: 15px;
             color: white;
             font-size: 18px;
+            flex-wrap: wrap;
+            justify-content: center;
         }
 
         .game-info span {
@@ -88,6 +100,8 @@
             border-radius: 15px;
             padding: 15px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            max-width: 100%;
+            touch-action: none;
         }
 
         .game-board {
@@ -97,11 +111,12 @@
             padding: 10px;
             border-radius: 10px;
             position: relative;
+            touch-action: none;
         }
 
         .cell {
-            width: 50px;
-            height: 50px;
+            width: var(--cell-size);
+            height: var(--cell-size);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -109,14 +124,14 @@
         }
 
         .apple {
-            width: 45px;
-            height: 45px;
+            width: calc(var(--cell-size) - 6px);
+            height: calc(var(--cell-size) - 6px);
             background: radial-gradient(circle at 30% 30%, #ff6b6b, #c0392b);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 20px;
+            font-size: calc(var(--cell-size) * 0.4);
             font-weight: bold;
             color: white;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
@@ -185,6 +200,7 @@
             margin-top: 15px;
             font-size: 14px;
             opacity: 0.9;
+            max-width: 480px;
         }
 
         .overlay {
@@ -211,13 +227,13 @@
 
         .overlay h2 {
             color: white;
-            font-size: 48px;
+            font-size: clamp(32px, 6vw, 48px);
             margin-bottom: 20px;
         }
 
         .overlay p {
             color: white;
-            font-size: 24px;
+            font-size: clamp(18px, 4vw, 24px);
             margin-bottom: 30px;
         }
 
@@ -246,13 +262,13 @@
         }
 
         .start-screen h2 {
-            font-size: 56px;
+            font-size: clamp(36px, 7vw, 56px);
             margin-bottom: 10px;
             text-shadow: 3px 3px 6px rgba(0,0,0,0.4);
         }
 
         .start-screen .subtitle {
-            font-size: 20px;
+            font-size: clamp(16px, 3.5vw, 20px);
             margin-bottom: 40px;
             opacity: 0.9;
         }
@@ -265,7 +281,7 @@
         .target-selector label {
             display: block;
             color: white;
-            font-size: 22px;
+            font-size: clamp(18px, 4vw, 22px);
             margin-bottom: 20px;
             text-align: center;
         }
@@ -273,7 +289,7 @@
         .target-input {
             width: 150px;
             height: 80px;
-            font-size: 48px;
+            font-size: clamp(32px, 7vw, 48px);
             font-weight: bold;
             text-align: center;
             border: 3px solid #FFD700;
@@ -300,8 +316,8 @@
         }
 
         .start-btn {
-            font-size: 24px;
-            padding: 15px 50px;
+            font-size: clamp(18px, 4vw, 24px);
+            padding: 14px 40px;
             background: linear-gradient(135deg, #4CAF50, #45a049);
             border-radius: 30px;
             box-shadow: 0 5px 20px rgba(0,0,0,0.3);
@@ -309,6 +325,32 @@
 
         .start-btn:hover {
             transform: scale(1.08);
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 28px;
+            }
+
+            .game-info {
+                gap: 12px;
+                font-size: 16px;
+            }
+
+            .controls {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            button {
+                padding: 12px 18px;
+                font-size: 15px;
+            }
+
+            .target-input {
+                width: 140px;
+                height: 70px;
+            }
         }
     </style>
 </head>
@@ -389,6 +431,7 @@
         const finalScoreDisplay = document.getElementById('final-score');
         const instructionsDisplay = document.getElementById('instructions');
         const targetInput = document.getElementById('target-input');
+        const rootStyle = document.documentElement.style;
 
         function formatTime(seconds) {
             const mins = Math.floor(seconds / 60);
@@ -467,7 +510,8 @@
         }
 
         function renderBoard() {
-            gameBoard.style.gridTemplateColumns = `repeat(${COLS}, 50px)`;
+            updateLayout();
+            gameBoard.style.gridTemplateColumns = `repeat(${COLS}, var(--cell-size))`;
             gameBoard.innerHTML = '';
             appleElements = [];
 
@@ -500,6 +544,28 @@
             });
 
             updateApplesLeft();
+        }
+
+        function updateLayout() {
+            const containerStyles = getComputedStyle(gameContainer);
+            const paddingX = parseFloat(containerStyles.paddingLeft) + parseFloat(containerStyles.paddingRight);
+            const paddingY = parseFloat(containerStyles.paddingTop) + parseFloat(containerStyles.paddingBottom);
+            const boardStyles = getComputedStyle(gameBoard);
+            const boardPaddingX = parseFloat(boardStyles.paddingLeft) + parseFloat(boardStyles.paddingRight);
+            const boardPaddingY = parseFloat(boardStyles.paddingTop) + parseFloat(boardStyles.paddingBottom);
+
+            const maxWidth = gameContainer.clientWidth - paddingX - boardPaddingX;
+            const topOffset = gameContainer.getBoundingClientRect().top;
+            const availableHeight = window.innerHeight - topOffset - paddingY - boardPaddingY - 30;
+            const maxHeight = Math.max(availableHeight, 200);
+
+            const widthBased = Math.floor(maxWidth / COLS);
+            const heightBased = Math.floor(maxHeight / ROWS);
+            const cellSize = Math.max(28, Math.min(60, Math.min(widthBased, heightBased)));
+
+            rootStyle.setProperty('--cell-size', `${cellSize}px`);
+            gameBoard.style.width = `${cellSize * COLS}px`;
+            gameBoard.style.height = `${cellSize * ROWS}px`;
         }
 
         function cacheApplePositions() {
@@ -642,35 +708,28 @@
             renderBoard();
         }
 
-        // Mouse events - free drag anywhere
-        document.addEventListener('mousedown', (e) => {
-            // Don't start selection if clicking on buttons, overlays, or inputs
-            if (e.target.closest('button') || e.target.closest('.overlay.show') || e.target.closest('input')) {
-                return;
-            }
+        let activePointerId = null;
 
-            e.preventDefault();
+        function shouldIgnoreTarget(target) {
+            return target.closest('button') || target.closest('.overlay.show') || target.closest('input');
+        }
+
+        function startSelection(clientX, clientY) {
             isSelecting = true;
-            startX = e.clientX;
-            startY = e.clientY;
+            startX = clientX;
+            startY = clientY;
 
-            // Re-cache apple positions on each drag start (handles scroll/resize)
             cacheApplePositions();
 
             updateSelectionBox(startX, startY, startX, startY);
             currentSelectionDisplay.textContent = 'Sum: 0';
             currentSelectionDisplay.classList.add('show');
-        });
+        }
 
-        document.addEventListener('mousemove', (e) => {
-            if (!isSelecting) return;
+        function updateSelection(clientX, clientY) {
+            updateSelectionBox(startX, startY, clientX, clientY);
 
-            const currentX = e.clientX;
-            const currentY = e.clientY;
-
-            updateSelectionBox(startX, startY, currentX, currentY);
-
-            selectedCells = getEnclosedApples(startX, startY, currentX, currentY);
+            selectedCells = getEnclosedApples(startX, startY, clientX, clientY);
             highlightApples(selectedCells);
 
             const sum = calculateSum(selectedCells);
@@ -682,9 +741,9 @@
             } else {
                 currentSelectionDisplay.style.color = 'white';
             }
-        });
+        }
 
-        document.addEventListener('mouseup', (e) => {
+        function finishSelection() {
             if (!isSelecting) return;
             isSelecting = false;
 
@@ -713,87 +772,50 @@
             }, 1000);
 
             selectedCells = [];
-        });
+        }
 
-        // Touch events for mobile - free drag
-        document.addEventListener('touchstart', (e) => {
-            // Don't start selection if touching buttons, overlays, or inputs
-            if (e.target.closest('button') || e.target.closest('.overlay.show') || e.target.closest('input')) {
+        document.addEventListener('pointerdown', (e) => {
+            if (shouldIgnoreTarget(e.target)) {
+                return;
+            }
+
+            if (e.pointerType === 'mouse' && e.button !== 0) {
                 return;
             }
 
             e.preventDefault();
-            const touch = e.touches[0];
-            isSelecting = true;
-            startX = touch.clientX;
-            startY = touch.clientY;
-
-            // Re-cache apple positions
-            cacheApplePositions();
-
-            updateSelectionBox(startX, startY, startX, startY);
-            currentSelectionDisplay.textContent = 'Sum: 0';
-            currentSelectionDisplay.classList.add('show');
+            activePointerId = e.pointerId;
+            if (e.target.setPointerCapture) {
+                e.target.setPointerCapture(e.pointerId);
+            }
+            startSelection(e.clientX, e.clientY);
         }, { passive: false });
 
-        document.addEventListener('touchmove', (e) => {
-            if (!isSelecting) return;
+        document.addEventListener('pointermove', (e) => {
+            if (!isSelecting || activePointerId !== e.pointerId) return;
             e.preventDefault();
-
-            const touch = e.touches[0];
-            const currentX = touch.clientX;
-            const currentY = touch.clientY;
-
-            updateSelectionBox(startX, startY, currentX, currentY);
-
-            selectedCells = getEnclosedApples(startX, startY, currentX, currentY);
-            highlightApples(selectedCells);
-
-            const sum = calculateSum(selectedCells);
-            currentSelectionDisplay.textContent = `Sum: ${sum}`;
-            if (sum === targetSum) {
-                currentSelectionDisplay.style.color = '#2ecc71';
-            } else if (sum > targetSum) {
-                currentSelectionDisplay.style.color = '#e74c3c';
-            } else {
-                currentSelectionDisplay.style.color = 'white';
-            }
+            updateSelection(e.clientX, e.clientY);
         }, { passive: false });
 
-        document.addEventListener('touchend', (e) => {
-            if (!isSelecting) return;
-            isSelecting = false;
-
-            selectionBox.style.display = 'none';
-            document.querySelectorAll('.apple.selected').forEach(el => {
-                el.classList.remove('selected');
-            });
-
-            if (selectedCells.length > 0) {
-                const sum = calculateSum(selectedCells);
-                if (sum === targetSum) {
-                    score += selectedCells.length;
-                    scoreDisplay.textContent = score;
-                    showFeedback(sum, true, selectedCells.length);
-                    removeApples(selectedCells);
-                } else {
-                    showFeedback(sum, false, selectedCells.length);
-                }
+        document.addEventListener('pointerup', (e) => {
+            if (activePointerId !== e.pointerId) return;
+            if (e.target.releasePointerCapture) {
+                e.target.releasePointerCapture(e.pointerId);
             }
+            finishSelection();
+            activePointerId = null;
+        });
 
-            currentSelectionDisplay.style.color = 'white';
-            setTimeout(() => {
-                if (!isSelecting) {
-                    currentSelectionDisplay.classList.remove('show');
-                }
-            }, 1000);
-
-            selectedCells = [];
+        document.addEventListener('pointercancel', (e) => {
+            if (activePointerId !== e.pointerId) return;
+            finishSelection();
+            activePointerId = null;
         });
 
         // Handle window resize - update cached positions
         window.addEventListener('resize', () => {
             if (appleElements.length > 0) {
+                updateLayout();
                 cacheApplePositions();
             }
         });
@@ -811,6 +833,12 @@
                 startGame();
             }
         });
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js');
+            });
+        }
     </script>
 </body>
 </html>
