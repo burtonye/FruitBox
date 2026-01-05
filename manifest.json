@@ -1,0 +1,16 @@
+{
+  "name": "Fruit Box",
+  "short_name": "Fruit Box",
+  "start_url": "./fruit_box.html",
+  "display": "standalone",
+  "background_color": "#1f5f3b",
+  "theme_color": "#1f5f3b",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

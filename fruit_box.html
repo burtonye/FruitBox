@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1f5f3b">
     <title>Fruit Box - Offline</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="icon.svg" type="image/svg+xml">
     <style>
         * {
             margin: 0;
@@ -11,14 +14,21 @@
             box-sizing: border-box;
         }
 
+        :root {
+            --cell-size: 50px;
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #1f5f3b;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 20px;
+            padding: calc(20px + env(safe-area-inset-top))
+                calc(20px + env(safe-area-inset-right))
+                calc(20px + env(safe-area-inset-bottom))
+                calc(20px + env(safe-area-inset-left));
             user-select: none;
         }
 
@@ -26,6 +36,7 @@
             color: white;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
             margin-bottom: 10px;
+            font-size: clamp(28px, 5vw, 42px);
         }
 
         .game-info {
@@ -33,7 +44,9 @@
             gap: 30px;
             margin-bottom: 15px;
             color: white;
-            font-size: 18px;
+            font-size: clamp(16px, 3vw, 18px);
+            flex-wrap: wrap;
+            justify-content: center;
         }
 
         .game-info span {
@@ -42,29 +55,19 @@
             border-radius: 20px;
         }
 
-        .game-info .timer {
-            font-variant-numeric: tabular-nums;
-        }
-
-        .game-info .timer.warning {
-            background: rgba(231, 76, 60, 0.6);
-            animation: pulse 1s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-
         .controls {
             margin-bottom: 15px;
             display: flex;
-            gap: 10px;
+            gap: 12px;
+            align-items: center;
+            color: white;
+            flex-wrap: wrap;
+            justify-content: center;
         }
 
         button {
             padding: 10px 20px;
-            font-size: 16px;
+            font-size: clamp(14px, 2.5vw, 16px);
             border: none;
             border-radius: 8px;
             cursor: pointer;
@@ -88,6 +91,8 @@
             border-radius: 15px;
             padding: 15px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            max-width: 100%;
+            touch-action: none;
         }
 
         .game-board {
@@ -97,11 +102,12 @@
             padding: 10px;
             border-radius: 10px;
             position: relative;
+            touch-action: none;
         }
 
         .cell {
-            width: 50px;
-            height: 50px;
+            width: var(--cell-size);
+            height: var(--cell-size);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -109,14 +115,14 @@
         }
 
         .apple {
-            width: 45px;
-            height: 45px;
+            width: calc(var(--cell-size) - 6px);
+            height: calc(var(--cell-size) - 6px);
             background: radial-gradient(circle at 30% 30%, #ff6b6b, #c0392b);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 20px;
+            font-size: calc(var(--cell-size) * 0.4);
             font-weight: bold;
             color: white;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
@@ -183,42 +189,9 @@
             color: white;
             text-align: center;
             margin-top: 15px;
-            font-size: 14px;
+            font-size: clamp(12px, 2.5vw, 14px);
             opacity: 0.9;
-        }
-
-        .overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s;
-        }
-
-        .overlay.show {
-            opacity: 1;
-            pointer-events: all;
-        }
-
-        .overlay h2 {
-            color: white;
-            font-size: 48px;
-            margin-bottom: 20px;
-        }
-
-        .overlay p {
-            color: white;
-            font-size: 24px;
-            margin-bottom: 30px;
+            max-width: 480px;
         }
 
         .current-selection {
@@ -230,7 +203,7 @@
             color: white;
             padding: 10px 20px;
             border-radius: 10px;
-            font-size: 18px;
+            font-size: clamp(16px, 3vw, 18px);
             opacity: 0;
             transition: opacity 0.2s;
             z-index: 1001;
@@ -240,75 +213,59 @@
             opacity: 1;
         }
 
-        /* Start Screen Styles */
-        .start-screen {
-            text-align: center;
-        }
-
-        .start-screen h2 {
-            font-size: 56px;
-            margin-bottom: 10px;
-            text-shadow: 3px 3px 6px rgba(0,0,0,0.4);
-        }
-
-        .start-screen .subtitle {
-            font-size: 20px;
-            margin-bottom: 40px;
-            opacity: 0.9;
-        }
-
-        .target-selector {
-            margin-bottom: 40px;
-            text-align: center;
-        }
-
-        .target-selector label {
-            display: block;
-            color: white;
-            font-size: 22px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
         .target-input {
-            width: 150px;
-            height: 80px;
-            font-size: 48px;
+            width: 90px;
+            height: 40px;
+            font-size: clamp(18px, 3vw, 20px);
             font-weight: bold;
             text-align: center;
-            border: 3px solid #FFD700;
-            border-radius: 15px;
+            border: 2px solid #FFD700;
+            border-radius: 10px;
             background: rgba(255,255,255,0.1);
             color: #FFD700;
             outline: none;
-            transition: all 0.2s;
         }
 
-        .target-input:focus {
-            background: rgba(255,255,255,0.2);
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+        .light-toggle {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: clamp(12px, 2.5vw, 14px);
         }
 
-        .target-input::placeholder {
-            color: rgba(255, 215, 0, 0.5);
+        body.light-colors {
+            background: #4c8b64;
         }
 
-        .target-hint {
-            margin-top: 10px;
-            color: rgba(255,255,255,0.6);
-            font-size: 14px;
+        body.light-colors .game-container {
+            background: #a87345;
         }
 
-        .start-btn {
-            font-size: 24px;
-            padding: 15px 50px;
-            background: linear-gradient(135deg, #4CAF50, #45a049);
-            border-radius: 30px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        body.light-colors .game-board {
+            background: #8b5a2b;
         }
 
-        .start-btn:hover {
-            transform: scale(1.08);
+        body.light-colors .apple {
+            background: radial-gradient(circle at 30% 30%, #ffb3b3, #e57373);
+        }
+
+        @media (max-width: 600px) {
+            .game-info {
+                gap: 12px;
+            }
+
+            .controls {
+                gap: 8px;
+            }
+
+            button {
+                padding: 8px 16px;
+            }
+
+            .target-input {
+                width: 80px;
+                height: 38px;
+            }
         }
     </style>
 </head>
@@ -317,12 +274,16 @@
     <div class="game-info">
         <span>Score: <strong id="score">0</strong></span>
         <span>Target: <strong id="target-display">10</strong></span>
-        <span class="timer">Time: <strong id="timer-display">2:00</strong></span>
         <span>Apples Left: <strong id="apples-left">0</strong></span>
     </div>
     <div class="controls">
-        <button onclick="showStartScreen()">New Game</button>
-        <button onclick="checkForMoves()">Check Moves</button>
+        <label>Target</label>
+        <input type="number" class="target-input" id="target-input" value="10" min="1" max="100">
+        <button onclick="startGame()">New Game</button>
+        <label class="light-toggle">
+            <input type="checkbox" id="light-toggle">
+            Light Colors
+        </label>
     </div>
     <div class="game-container" id="game-container">
         <div class="game-board" id="game-board"></div>
@@ -331,110 +292,36 @@
         Drag to select apples that sum to exactly 10. Get 1 point per apple!
     </div>
 
-    <!-- Selection box (now in body for free positioning) -->
+    <!-- Selection box -->
     <div class="selection-box" id="selection-box"></div>
 
     <div class="current-selection" id="current-selection">Sum: 0</div>
 
-    <!-- Start Screen -->
-    <div class="overlay show" id="start-screen">
-        <div class="start-screen">
-            <h2>Fruit Box</h2>
-            <p class="subtitle">Select apples that add up to your target number!</p>
-
-            <div class="target-selector">
-                <label>Enter your target sum (1-100):</label>
-                <input type="number" class="target-input" id="target-input" value="10" min="1" max="100">
-                <p class="target-hint">You have 120 seconds to score as many points as possible!</p>
-            </div>
-
-            <button class="start-btn" onclick="startGame()">Start Game</button>
-        </div>
-    </div>
-
-    <!-- Game Over Screen -->
-    <div class="overlay" id="game-over">
-        <h2 id="game-over-title">Game Over!</h2>
-        <p>Final Score: <span id="final-score">0</span></p>
-        <button onclick="showStartScreen()">Play Again</button>
-    </div>
-
     <script>
         const ROWS = 10;
         const COLS = 17;
-        const GAME_DURATION = 120; // seconds
 
         let board = [];
         let score = 0;
         let targetSum = 10;
-        let timeRemaining = GAME_DURATION;
-        let timerInterval = null;
         let isSelecting = false;
         let startX = 0;
         let startY = 0;
         let selectedCells = [];
         let appleElements = [];
+        let activePointerId = null;
 
         const gameBoard = document.getElementById('game-board');
         const gameContainer = document.getElementById('game-container');
         const selectionBox = document.getElementById('selection-box');
         const scoreDisplay = document.getElementById('score');
         const targetDisplayGame = document.getElementById('target-display');
-        const timerDisplay = document.getElementById('timer-display');
         const applesLeftDisplay = document.getElementById('apples-left');
         const currentSelectionDisplay = document.getElementById('current-selection');
-        const startScreen = document.getElementById('start-screen');
-        const gameOverScreen = document.getElementById('game-over');
-        const gameOverTitle = document.getElementById('game-over-title');
-        const finalScoreDisplay = document.getElementById('final-score');
         const instructionsDisplay = document.getElementById('instructions');
         const targetInput = document.getElementById('target-input');
-
-        function formatTime(seconds) {
-            const mins = Math.floor(seconds / 60);
-            const secs = seconds % 60;
-            return `${mins}:${secs.toString().padStart(2, '0')}`;
-        }
-
-        function updateTimerDisplay() {
-            timerDisplay.textContent = formatTime(timeRemaining);
-            const timerSpan = timerDisplay.closest('span');
-            if (timeRemaining <= 10) {
-                timerSpan.classList.add('warning');
-            } else {
-                timerSpan.classList.remove('warning');
-            }
-        }
-
-        function startTimer() {
-            stopTimer();
-            timeRemaining = GAME_DURATION;
-            updateTimerDisplay();
-
-            timerInterval = setInterval(() => {
-                timeRemaining--;
-                updateTimerDisplay();
-
-                if (timeRemaining <= 0) {
-                    stopTimer();
-                    endGame("Time's Up!");
-                }
-            }, 1000);
-        }
-
-        function stopTimer() {
-            if (timerInterval) {
-                clearInterval(timerInterval);
-                timerInterval = null;
-            }
-        }
-
-        function showStartScreen() {
-            stopTimer();
-            gameOverScreen.classList.remove('show');
-            startScreen.classList.add('show');
-            targetInput.focus();
-        }
+        const lightToggle = document.getElementById('light-toggle');
+        const rootStyle = document.documentElement.style;
 
         function startGame() {
             // Get target from input
@@ -444,11 +331,31 @@
             targetSum = inputValue;
             targetInput.value = targetSum;
 
-            startScreen.classList.remove('show');
             targetDisplayGame.textContent = targetSum;
             instructionsDisplay.textContent = `Drag to select apples that sum to exactly ${targetSum}. Get 1 point per apple!`;
             newGame();
-            startTimer();
+        }
+
+        function updateLayout() {
+            const containerStyles = getComputedStyle(gameContainer);
+            const paddingX = parseFloat(containerStyles.paddingLeft) + parseFloat(containerStyles.paddingRight);
+            const paddingY = parseFloat(containerStyles.paddingTop) + parseFloat(containerStyles.paddingBottom);
+            const boardStyles = getComputedStyle(gameBoard);
+            const boardPaddingX = parseFloat(boardStyles.paddingLeft) + parseFloat(boardStyles.paddingRight);
+            const boardPaddingY = parseFloat(boardStyles.paddingTop) + parseFloat(boardStyles.paddingBottom);
+
+            const maxWidth = window.innerWidth - paddingX - boardPaddingX - 40;
+            const topOffset = gameContainer.getBoundingClientRect().top;
+            const availableHeight = window.innerHeight - topOffset - paddingY - boardPaddingY - 30;
+            const maxHeight = Math.max(availableHeight, 200);
+
+            const widthBased = Math.floor(maxWidth / COLS);
+            const heightBased = Math.floor(maxHeight / ROWS);
+            const cellSize = Math.max(28, Math.min(60, Math.min(widthBased, heightBased)));
+
+            rootStyle.setProperty('--cell-size', `${cellSize}px`);
+            gameBoard.style.width = `${cellSize * COLS}px`;
+            gameBoard.style.height = `${cellSize * ROWS}px`;
         }
 
         function generateBoard() {
@@ -467,7 +374,8 @@
         }
 
         function renderBoard() {
-            gameBoard.style.gridTemplateColumns = `repeat(${COLS}, 50px)`;
+            updateLayout();
+            gameBoard.style.gridTemplateColumns = `repeat(${COLS}, var(--cell-size))`;
             gameBoard.innerHTML = '';
             appleElements = [];
 
@@ -597,80 +505,33 @@
             }, 1000);
         }
 
-        function checkForMoves() {
-            // Re-cache positions in case of scroll/resize
-            cacheApplePositions();
-
-            // Check all possible rectangular selections
-            const apples = appleElements.slice();
-            const n = apples.length;
-
-            // Try all combinations of apples that could form a rectangle
-            for (let i = 0; i < n; i++) {
-                for (let j = i; j < n; j++) {
-                    // Define a rectangle from apple i to apple j bounds
-                    const minX = Math.min(apples[i].centerX, apples[j].centerX) - 1;
-                    const maxX = Math.max(apples[i].centerX, apples[j].centerX) + 1;
-                    const minY = Math.min(apples[i].centerY, apples[j].centerY) - 1;
-                    const maxY = Math.max(apples[i].centerY, apples[j].centerY) + 1;
-
-                    const enclosed = getEnclosedApples(minX, minY, maxX, maxY);
-                    if (enclosed.length > 0 && calculateSum(enclosed) === targetSum) {
-                        alert('There are still valid moves available!');
-                        return true;
-                    }
-                }
-            }
-
-            alert('No more valid moves. Game Over!');
-            endGame('No More Moves!');
-            return false;
-        }
-
-        function endGame(reason = 'Game Over!') {
-            stopTimer();
-            gameOverTitle.textContent = reason;
-            finalScoreDisplay.textContent = score;
-            gameOverScreen.classList.add('show');
-        }
-
         function newGame() {
             score = 0;
             scoreDisplay.textContent = score;
-            gameOverScreen.classList.remove('show');
             generateBoard();
             renderBoard();
         }
 
-        // Mouse events - free drag anywhere
-        document.addEventListener('mousedown', (e) => {
-            // Don't start selection if clicking on buttons, overlays, or inputs
-            if (e.target.closest('button') || e.target.closest('.overlay.show') || e.target.closest('input')) {
-                return;
-            }
+        function shouldIgnoreTarget(target) {
+            return target.closest('button') || target.closest('input') || target.closest('label');
+        }
 
-            e.preventDefault();
+        function startSelection(clientX, clientY) {
             isSelecting = true;
-            startX = e.clientX;
-            startY = e.clientY;
+            startX = clientX;
+            startY = clientY;
 
-            // Re-cache apple positions on each drag start (handles scroll/resize)
             cacheApplePositions();
 
             updateSelectionBox(startX, startY, startX, startY);
             currentSelectionDisplay.textContent = 'Sum: 0';
             currentSelectionDisplay.classList.add('show');
-        });
+        }
 
-        document.addEventListener('mousemove', (e) => {
-            if (!isSelecting) return;
+        function updateSelection(clientX, clientY) {
+            updateSelectionBox(startX, startY, clientX, clientY);
 
-            const currentX = e.clientX;
-            const currentY = e.clientY;
-
-            updateSelectionBox(startX, startY, currentX, currentY);
-
-            selectedCells = getEnclosedApples(startX, startY, currentX, currentY);
+            selectedCells = getEnclosedApples(startX, startY, clientX, clientY);
             highlightApples(selectedCells);
 
             const sum = calculateSum(selectedCells);
@@ -682,9 +543,9 @@
             } else {
                 currentSelectionDisplay.style.color = 'white';
             }
-        });
+        }
 
-        document.addEventListener('mouseup', (e) => {
+        function finishSelection() {
             if (!isSelecting) return;
             isSelecting = false;
 
@@ -713,88 +574,54 @@
             }, 1000);
 
             selectedCells = [];
-        });
+        }
 
-        // Touch events for mobile - free drag
-        document.addEventListener('touchstart', (e) => {
-            // Don't start selection if touching buttons, overlays, or inputs
-            if (e.target.closest('button') || e.target.closest('.overlay.show') || e.target.closest('input')) {
+        // Pointer events for unified mouse/touch handling
+        document.addEventListener('pointerdown', (e) => {
+            if (shouldIgnoreTarget(e.target)) {
+                return;
+            }
+
+            if (e.pointerType === 'mouse' && e.button !== 0) {
                 return;
             }
 
             e.preventDefault();
-            const touch = e.touches[0];
-            isSelecting = true;
-            startX = touch.clientX;
-            startY = touch.clientY;
-
-            // Re-cache apple positions
-            cacheApplePositions();
-
-            updateSelectionBox(startX, startY, startX, startY);
-            currentSelectionDisplay.textContent = 'Sum: 0';
-            currentSelectionDisplay.classList.add('show');
+            activePointerId = e.pointerId;
+            if (e.target.setPointerCapture) {
+                e.target.setPointerCapture(e.pointerId);
+            }
+            startSelection(e.clientX, e.clientY);
         }, { passive: false });
 
-        document.addEventListener('touchmove', (e) => {
-            if (!isSelecting) return;
+        document.addEventListener('pointermove', (e) => {
+            if (!isSelecting || activePointerId !== e.pointerId) return;
             e.preventDefault();
-
-            const touch = e.touches[0];
-            const currentX = touch.clientX;
-            const currentY = touch.clientY;
-
-            updateSelectionBox(startX, startY, currentX, currentY);
-
-            selectedCells = getEnclosedApples(startX, startY, currentX, currentY);
-            highlightApples(selectedCells);
-
-            const sum = calculateSum(selectedCells);
-            currentSelectionDisplay.textContent = `Sum: ${sum}`;
-            if (sum === targetSum) {
-                currentSelectionDisplay.style.color = '#2ecc71';
-            } else if (sum > targetSum) {
-                currentSelectionDisplay.style.color = '#e74c3c';
-            } else {
-                currentSelectionDisplay.style.color = 'white';
-            }
+            updateSelection(e.clientX, e.clientY);
         }, { passive: false });
 
-        document.addEventListener('touchend', (e) => {
-            if (!isSelecting) return;
-            isSelecting = false;
-
-            selectionBox.style.display = 'none';
-            document.querySelectorAll('.apple.selected').forEach(el => {
-                el.classList.remove('selected');
-            });
-
-            if (selectedCells.length > 0) {
-                const sum = calculateSum(selectedCells);
-                if (sum === targetSum) {
-                    score += selectedCells.length;
-                    scoreDisplay.textContent = score;
-                    showFeedback(sum, true, selectedCells.length);
-                    removeApples(selectedCells);
-                } else {
-                    showFeedback(sum, false, selectedCells.length);
-                }
+        document.addEventListener('pointerup', (e) => {
+            if (activePointerId !== e.pointerId) return;
+            if (e.target.releasePointerCapture) {
+                e.target.releasePointerCapture(e.pointerId);
             }
-
-            currentSelectionDisplay.style.color = 'white';
-            setTimeout(() => {
-                if (!isSelecting) {
-                    currentSelectionDisplay.classList.remove('show');
-                }
-            }, 1000);
-
-            selectedCells = [];
+            finishSelection();
+            activePointerId = null;
         });
 
-        // Handle window resize - update cached positions
+        document.addEventListener('pointercancel', (e) => {
+            if (activePointerId !== e.pointerId) return;
+            finishSelection();
+            activePointerId = null;
+        });
+
+        // Handle window resize - update layout and cached positions
         window.addEventListener('resize', () => {
             if (appleElements.length > 0) {
-                cacheApplePositions();
+                updateLayout();
+                requestAnimationFrame(() => {
+                    cacheApplePositions();
+                });
             }
         });
 
@@ -805,12 +632,24 @@
             }
         });
 
-        // Allow Enter key to start game from input
-        targetInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                startGame();
+        // Light color toggle
+        lightToggle.addEventListener('change', () => {
+            if (lightToggle.checked) {
+                document.body.classList.add('light-colors');
+            } else {
+                document.body.classList.remove('light-colors');
             }
         });
+
+        // Register service worker for PWA
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').catch(() => {
+                // Silently fail if sw.js doesn't exist yet
+            });
+        }
+
+        // Auto-start game on load
+        startGame();
     </script>
 </body>
 </html>
