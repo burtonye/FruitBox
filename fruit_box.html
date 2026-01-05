@@ -93,6 +93,7 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
             max-width: 100%;
             touch-action: none;
+            margin-bottom: 20px;
         }
 
         .game-board {
@@ -188,7 +189,8 @@
         .instructions {
             color: white;
             text-align: center;
-            margin-top: 15px;
+            margin-top: 20px;
+            margin-bottom: 20px;
             font-size: clamp(12px, 2.5vw, 14px);
             opacity: 0.9;
             max-width: 480px;
@@ -344,18 +346,34 @@
             const boardPaddingX = parseFloat(boardStyles.paddingLeft) + parseFloat(boardStyles.paddingRight);
             const boardPaddingY = parseFloat(boardStyles.paddingTop) + parseFloat(boardStyles.paddingBottom);
 
+            // Get grid gap from computed styles
+            const gridGap = parseFloat(boardStyles.gap) || 5;
+
             const maxWidth = window.innerWidth - paddingX - boardPaddingX - 40;
             const topOffset = gameContainer.getBoundingClientRect().top;
-            const availableHeight = window.innerHeight - topOffset - paddingY - boardPaddingY - 30;
+
+            // Measure actual instructions element height
+            const instructionsRect = instructionsDisplay.getBoundingClientRect();
+            const instructionsHeight = instructionsRect.height || 50;
+            const instructionsMargin = 40; // margin-top + margin-bottom
+            const gameContainerMargin = 20; // margin-bottom on game-container
+
+            const bottomPadding = 40;
+            const totalBottomReserve = instructionsHeight + instructionsMargin + gameContainerMargin + bottomPadding;
+            const availableHeight = window.innerHeight - topOffset - paddingY - boardPaddingY - totalBottomReserve;
             const maxHeight = Math.max(availableHeight, 200);
 
-            const widthBased = Math.floor(maxWidth / COLS);
-            const heightBased = Math.floor(maxHeight / ROWS);
+            // Account for grid gaps when calculating cell size
+            const totalGapWidth = gridGap * (COLS - 1);
+            const totalGapHeight = gridGap * (ROWS - 1);
+
+            const widthBased = Math.floor((maxWidth - totalGapWidth) / COLS);
+            const heightBased = Math.floor((maxHeight - totalGapHeight) / ROWS);
             const cellSize = Math.max(28, Math.min(60, Math.min(widthBased, heightBased)));
 
             rootStyle.setProperty('--cell-size', `${cellSize}px`);
-            gameBoard.style.width = `${cellSize * COLS}px`;
-            gameBoard.style.height = `${cellSize * ROWS}px`;
+            gameBoard.style.width = `${cellSize * COLS + totalGapWidth}px`;
+            gameBoard.style.height = `${cellSize * ROWS + totalGapHeight}px`;
         }
 
         function generateBoard() {
