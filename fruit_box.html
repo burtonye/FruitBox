@@ -215,6 +215,46 @@
             opacity: 1;
         }
 
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+            z-index: 1200;
+            padding: 20px;
+        }
+
+        .overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .overlay-content {
+            background: rgba(31, 95, 59, 0.95);
+            color: white;
+            border-radius: 16px;
+            padding: 24px 32px;
+            text-align: center;
+            max-width: 360px;
+            width: 100%;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.4);
+        }
+
+        .overlay-content h2 {
+            font-size: clamp(24px, 4vw, 32px);
+            margin-bottom: 12px;
+        }
+
+        .overlay-content p {
+            margin-bottom: 20px;
+            font-size: clamp(14px, 3vw, 18px);
+        }
+
         .target-input {
             width: 90px;
             height: 40px;
@@ -277,11 +317,13 @@
         <span>Score: <strong id="score">0</strong></span>
         <span>Target: <strong id="target-display">10</strong></span>
         <span>Apples Left: <strong id="apples-left">0</strong></span>
+        <span>Time: <strong id="time-remaining">120</strong></span>
     </div>
     <div class="controls">
         <label>Target</label>
         <input type="number" class="target-input" id="target-input" value="10" min="1" max="100">
         <button onclick="startGame()">New Game</button>
+        <button id="bgm-toggle" type="button">Music: On</button>
         <label class="light-toggle">
             <input type="checkbox" id="light-toggle">
             Light Colors
@@ -299,9 +341,20 @@
 
     <div class="current-selection" id="current-selection">Sum: 0</div>
 
+    <div class="overlay" id="overlay">
+        <div class="overlay-content">
+            <h2 id="overlay-title">You Win!</h2>
+            <p id="overlay-message">Great job! Your score: 0</p>
+            <button id="overlay-restart">Play Again</button>
+        </div>
+    </div>
+
+    <audio id="bgm" src="3.mp3" loop></audio>
+
     <script>
         const ROWS = 10;
         const COLS = 17;
+        const TIME_LIMIT_SECONDS = 120;
 
         let board = [];
         let score = 0;
@@ -312,6 +365,10 @@
         let selectedCells = [];
         let appleElements = [];
         let activePointerId = null;
+        let gameOver = false;
+        let timerInterval = null;
+        let timeStart = null;
+        let bgmEnabled = true;
 
         const gameBoard = document.getElementById('game-board');
         const gameContainer = document.getElementById('game-container');
@@ -323,6 +380,13 @@
         const instructionsDisplay = document.getElementById('instructions');
         const targetInput = document.getElementById('target-input');
         const lightToggle = document.getElementById('light-toggle');
+        const timeRemainingDisplay = document.getElementById('time-remaining');
+        const overlay = document.getElementById('overlay');
+        const overlayTitle = document.getElementById('overlay-title');
+        const overlayMessage = document.getElementById('overlay-message');
+        const overlayRestart = document.getElementById('overlay-restart');
+        const bgm = document.getElementById('bgm');
+        const bgmToggle = document.getElementById('bgm-toggle');
         const rootStyle = document.documentElement.style;
 
         function startGame() {
@@ -425,7 +489,7 @@
                 cacheApplePositions();
             });
 
-            updateApplesLeft();
+            checkGameState();
         }
 
         function cacheApplePositions() {
@@ -453,6 +517,38 @@
             }
             applesLeftDisplay.textContent = count;
             return count;
+        }
+
+        function checkForMoves() {
+            const prefix = Array.from({ length: ROWS + 1 }, () => Array(COLS + 1).fill(0));
+
+            for (let r = 1; r <= ROWS; r++) {
+                for (let c = 1; c <= COLS; c++) {
+                    const value = board[r - 1][c - 1] ?? 0;
+                    prefix[r][c] = value + prefix[r - 1][c] + prefix[r][c - 1] - prefix[r - 1][c - 1];
+                }
+            }
+
+            for (let top = 0; top < ROWS; top++) {
+                for (let bottom = top; bottom < ROWS; bottom++) {
+                    for (let left = 0; left < COLS; left++) {
+                        for (let right = left; right < COLS; right++) {
+                            const sum = prefix[bottom + 1][right + 1]
+                                - prefix[top][right + 1]
+                                - prefix[bottom + 1][left]
+                                + prefix[top][left];
+                            if (sum === targetSum) {
+                                return true;
+                            }
+                            if (sum > targetSum) {
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return false;
         }
 
         function getEnclosedApples(x1, y1, x2, y2) {
@@ -526,8 +622,13 @@
         function newGame() {
             score = 0;
             scoreDisplay.textContent = score;
-            generateBoard();
+            gameOver = false;
+            hideOverlay();
+            do {
+                generateBoard();
+            } while (!checkForMoves());
             renderBoard();
+            startTimer();
         }
 
         function shouldIgnoreTarget(target) {
@@ -535,6 +636,7 @@
         }
 
         function startSelection(clientX, clientY) {
+            if (gameOver) return;
             isSelecting = true;
             startX = clientX;
             startY = clientY;
@@ -564,7 +666,7 @@
         }
 
         function finishSelection() {
-            if (!isSelecting) return;
+            if (!isSelecting || gameOver) return;
             isSelecting = false;
 
             selectionBox.style.display = 'none';
@@ -594,6 +696,81 @@
             selectedCells = [];
         }
 
+        function showOverlay(title, message) {
+            overlayTitle.textContent = title;
+            overlayMessage.textContent = message;
+            overlay.classList.add('show');
+        }
+
+        function hideOverlay() {
+            overlay.classList.remove('show');
+        }
+
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        }
+
+        function updateTimeDisplay(seconds) {
+            timeRemainingDisplay.textContent = String(seconds);
+        }
+
+        function startTimer() {
+            stopTimer();
+            timeStart = Date.now();
+            updateTimeDisplay(TIME_LIMIT_SECONDS);
+            timerInterval = setInterval(() => {
+                const elapsedSeconds = Math.floor((Date.now() - timeStart) / 1000);
+                const remaining = Math.max(0, TIME_LIMIT_SECONDS - elapsedSeconds);
+                updateTimeDisplay(remaining);
+                if (remaining <= 0) {
+                    handleGameOver('time');
+                }
+            }, 250);
+        }
+
+        function handleVictory() {
+            if (gameOver) return;
+            gameOver = true;
+            stopTimer();
+            showOverlay('You Win!', `Great job! Your score: ${score}`);
+        }
+
+        function handleGameOver(reason) {
+            if (gameOver) return;
+            gameOver = true;
+            stopTimer();
+            const message = reason === 'time'
+                ? `Time's up! Your score: ${score}`
+                : `No more moves! Your score: ${score}`;
+            showOverlay('Game Over', message);
+        }
+
+        function checkGameState() {
+            const applesLeft = updateApplesLeft();
+            if (applesLeft === 0) {
+                handleVictory();
+                return;
+            }
+            if (!checkForMoves()) {
+                handleGameOver('nomoves');
+            }
+        }
+
+        function updateBgmState() {
+            bgmToggle.textContent = bgmEnabled ? 'Music: On' : 'Music: Off';
+            if (!bgmEnabled) {
+                bgm.pause();
+                return;
+            }
+            bgm.volume = 0.4;
+            bgm.play().catch(() => {
+                // Ignore autoplay restrictions
+            });
+        }
+
         // Pointer events for unified mouse/touch handling
         document.addEventListener('pointerdown', (e) => {
             if (shouldIgnoreTarget(e.target)) {
@@ -606,6 +783,7 @@
 
             e.preventDefault();
             activePointerId = e.pointerId;
+            updateBgmState();
             if (e.target.setPointerCapture) {
                 e.target.setPointerCapture(e.pointerId);
             }
@@ -650,6 +828,15 @@
             }
         });
 
+        overlayRestart.addEventListener('click', () => {
+            startGame();
+        });
+
+        bgmToggle.addEventListener('click', () => {
+            bgmEnabled = !bgmEnabled;
+            updateBgmState();
+        });
+
         // Light color toggle
         lightToggle.addEventListener('change', () => {
             if (lightToggle.checked) {
@@ -667,6 +854,7 @@
         }
 
         // Auto-start game on load
+        updateBgmState();
         startGame();
     </script>
 </body>
