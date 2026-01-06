@@ -316,6 +316,7 @@
     <div class="game-info">
         <span>Score: <strong id="score">0</strong></span>
         <span>Target: <strong id="target-display">10</strong></span>
+        <span>Layout: <strong id="layout-display">10×17</strong></span>
         <span>Apples Left: <strong id="apples-left">0</strong></span>
         <span>Time: <strong id="time-remaining">120</strong></span>
     </div>
@@ -327,6 +328,10 @@
         <label class="light-toggle">
             <input type="checkbox" id="light-toggle">
             Light Colors
+        </label>
+        <label class="light-toggle">
+            <input type="checkbox" id="compact-toggle">
+            Compact Board
         </label>
     </div>
     <div class="game-container" id="game-container">
@@ -352,8 +357,10 @@
     <audio id="bgm" src="3.mp3" loop></audio>
 
     <script>
-        const ROWS = 10;
-        const COLS = 17;
+        const DEFAULT_LAYOUT = { rows: 10, cols: 17 };
+        const COMPACT_LAYOUT = { rows: 8, cols: 12 };
+        let ROWS = DEFAULT_LAYOUT.rows;
+        let COLS = DEFAULT_LAYOUT.cols;
         const TIME_LIMIT_SECONDS = 120;
 
         let board = [];
@@ -380,6 +387,7 @@
         const instructionsDisplay = document.getElementById('instructions');
         const targetInput = document.getElementById('target-input');
         const lightToggle = document.getElementById('light-toggle');
+        const compactToggle = document.getElementById('compact-toggle');
         const timeRemainingDisplay = document.getElementById('time-remaining');
         const overlay = document.getElementById('overlay');
         const overlayTitle = document.getElementById('overlay-title');
@@ -388,6 +396,7 @@
         const bgm = document.getElementById('bgm');
         const bgmToggle = document.getElementById('bgm-toggle');
         const rootStyle = document.documentElement.style;
+        const layoutDisplay = document.getElementById('layout-display');
 
         function startGame() {
             // Get target from input
@@ -400,6 +409,22 @@
             targetDisplayGame.textContent = targetSum;
             instructionsDisplay.textContent = `Drag to select apples that sum to exactly ${targetSum}. Get 1 point per apple!`;
             newGame();
+        }
+
+        function updateLayoutDisplay() {
+            layoutDisplay.textContent = `${ROWS}×${COLS}`;
+        }
+
+        function setLayout(isCompact, { restart = true } = {}) {
+            const layout = isCompact ? COMPACT_LAYOUT : DEFAULT_LAYOUT;
+            ROWS = layout.rows;
+            COLS = layout.cols;
+            updateLayoutDisplay();
+            if (restart) {
+                startGame();
+                return;
+            }
+            updateLayout();
         }
 
         function updateLayout() {
@@ -846,6 +871,10 @@
             }
         });
 
+        compactToggle.addEventListener('change', () => {
+            setLayout(compactToggle.checked);
+        });
+
         // Register service worker for PWA
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('sw.js').catch(() => {
@@ -854,6 +883,9 @@
         }
 
         // Auto-start game on load
+        const prefersCompact = window.matchMedia('(max-width: 600px)').matches;
+        compactToggle.checked = prefersCompact;
+        setLayout(prefersCompact, { restart: false });
         updateBgmState();
         startGame();
     </script>
