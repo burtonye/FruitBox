@@ -1,12 +1,22 @@
 {
-  "name": "fruit-box-tests",
-  "version": "1.0.0",
-  "description": "Test suite for Fruit Box game",
+  "name": "fruit-box-multiplayer",
+  "version": "2.0.0",
+  "description": "Two-player Fruit Box game with real-time multiplayer",
+  "main": "server.js",
   "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
     "test": "playwright test",
     "test:ui": "playwright test --ui",
     "test:headed": "playwright test --headed",
     "test:debug": "playwright test --debug"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.7.2"
   },
   "devDependencies": {
     "@playwright/test": "^1.40.0"

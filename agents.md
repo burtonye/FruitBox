@@ -4,6 +4,55 @@ This document summarizes all feature changes, improvements, and requests made du
 
 ## Recent Features & Changes
 
+### 0. Two-Player Multiplayer Mode
+**Status:** ✅ Completed
+**Description:** Evolved the game into a real-time two-player experience using WebSockets.
+
+**Details:**
+- **Architecture:**
+  - Node.js + Express.js backend server (`server.js`)
+  - Socket.IO for real-time bidirectional communication
+  - Static files served from `public/` directory
+  - Room-based session management
+
+- **Player Roles:**
+  - **Player 1 (Gold):** Main player who scores points by selecting valid apple combinations
+  - **Player 2 (Cyan):** Helper who can draw selection boxes visible to P1 but cannot score
+
+- **Room System:**
+  - 6-character alphanumeric room codes (e.g., "ABC123")
+  - First player to join becomes P1 (host)
+  - Second player becomes P2
+  - Rooms cleaned up when both players disconnect
+
+- **Real-time Synchronization:**
+  - Game board state synced across players
+  - Selection boxes broadcast in real-time
+  - Score and timer updates propagate instantly
+  - Game over events synchronized
+
+- **Game Flow:**
+  ```
+  Lobby → Create/Join Room → Waiting Room → Home Screen → Game Board → Game Over
+  ```
+
+**New Files:**
+- `server.js` - Express + Socket.IO server
+- `public/index.html` - Multiplayer frontend
+- `render.yaml` - Render deployment config
+- `package.json` - Updated with server dependencies
+
+**Dependencies Added:**
+- `express@^4.18.2`
+- `socket.io@^4.7.2`
+
+**Deployment:**
+- Hosted on Render (Web Service)
+- Uses `PORT` environment variable
+- Auto-deploy from Git
+
+---
+
 ### 1. Time Configuration Control
 **Status:** ✅ Completed
 **Description:** Added ability to configure game time duration before starting a game.
@@ -212,9 +261,16 @@ The original game was built using Adobe Animate/CreateJS framework with timeline
 ```
 
 ### Hosting
-**Platform:** Vercel
-**Status:** Deployed
-**Previous Attempts:** GitHub Pages (encountered custom domain DNS issues)
+
+**Multiplayer Version (v3.0):**
+- **Platform:** Render (Web Service)
+- **Reason:** WebSocket support required for real-time multiplayer
+- **Deployment:** `render.yaml` Blueprint auto-deploy
+
+**Legacy Single-Player (v2.x):**
+- **Platform:** Vercel
+- **Status:** Deployed
+- **Previous Attempts:** GitHub Pages (encountered custom domain DNS issues)
 
 ---
 
@@ -276,6 +332,15 @@ All game flows have been tested:
 ---
 
 ## Changelog Summary
+
+**Version: 3.0** (multiplayer branch)
+- ✅ Two-player real-time multiplayer
+- ✅ Socket.IO WebSocket server
+- ✅ Room-based sessions with 6-character codes
+- ✅ Player roles: P1 (scorer) vs P2 (visual helper)
+- ✅ Dual selection box rendering (gold for P1, cyan for P2)
+- ✅ Render deployment configuration
+- ✅ Express.js static file serving
 
 **Version: 2.1** (design-dev-work branch)
 - ✅ Number validation (sum divisible by target)

@@ -1,0 +1,17 @@
+# Render Blueprint - Fruit Box Multiplayer
+# https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: fruit-box-multiplayer
+    runtime: node
+    region: oregon
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+    healthCheckPath: /
+    autoDeploy: true
+

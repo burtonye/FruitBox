@@ -1,0 +1,2364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1f5f3b">
+    <title>Fruit Box - Multiplayer</title>
+    <link rel="icon" href="icon.svg" type="image/svg+xml">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --cell-size: 50px;
+            --p1-color: #FFD700;
+            --p2-color: #00CED1;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1f5f3b;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: calc(20px + env(safe-area-inset-top))
+                calc(20px + env(safe-area-inset-right))
+                calc(20px + env(safe-area-inset-bottom))
+                calc(20px + env(safe-area-inset-left));
+            user-select: none;
+        }
+
+        h1 {
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            margin-bottom: 10px;
+            font-size: clamp(28px, 5vw, 42px);
+        }
+
+        .game-info {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 15px;
+            color: white;
+            font-size: clamp(16px, 3vw, 18px);
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .game-info span {
+            background: rgba(255,255,255,0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+        }
+
+        .game-info .player-badge {
+            font-weight: bold;
+        }
+
+        .game-info .player-badge.p1 {
+            background: var(--p1-color);
+            color: #333;
+        }
+
+        .game-info .player-badge.p2 {
+            background: var(--p2-color);
+            color: #333;
+        }
+
+        .controls {
+            margin-bottom: 15px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            color: white;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: clamp(14px, 2.5vw, 16px);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background: #4CAF50;
+            color: white;
+            transition: transform 0.1s, background 0.2s;
+        }
+
+        button:hover {
+            background: #45a049;
+            transform: scale(1.05);
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .game-area-container {
+            position: relative;
+            background: #654321;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            width: min(95vw, 950px);
+            min-height: clamp(600px, 75vh, 850px);
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .game-container {
+            position: relative;
+            background: transparent;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .game-board {
+            display: grid;
+            gap: 5px;
+            background: #654321;
+            padding: 10px;
+            border-radius: 10px;
+            position: relative;
+            touch-action: none;
+            margin: 0 auto;
+        }
+
+        .cell {
+            width: var(--cell-size);
+            height: var(--cell-size);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .apple {
+            width: calc(var(--cell-size) - 6px);
+            height: calc(var(--cell-size) - 6px);
+            background: radial-gradient(circle at 30% 30%, #ff6b6b, #c0392b);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: calc(var(--cell-size) * 0.4);
+            font-weight: bold;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            position: relative;
+            cursor: pointer;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+
+        .apple::before {
+            content: '';
+            position: absolute;
+            top: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 3px;
+            height: 10px;
+            background: #5d4e37;
+            border-radius: 2px;
+        }
+
+        .apple::after {
+            content: '';
+            position: absolute;
+            top: -6px;
+            left: 55%;
+            width: 10px;
+            height: 8px;
+            background: #27ae60;
+            border-radius: 50% 50% 50% 0;
+            transform: rotate(45deg);
+        }
+
+        .apple.selected {
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(255,255,0,0.8);
+        }
+
+        .apple.removed {
+            visibility: hidden;
+        }
+
+        .apple-flying {
+            position: fixed;
+            pointer-events: none;
+            z-index: 1100;
+            width: var(--cell-size);
+            height: var(--cell-size);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: calc(var(--cell-size) * 0.4);
+            font-weight: bold;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            background: radial-gradient(circle at 30% 30%, #ff6b6b, #c0392b);
+            border-radius: 50%;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+        }
+
+        .apple-flying::before {
+            content: '';
+            position: absolute;
+            top: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 3px;
+            height: 10px;
+            background: #5d4e37;
+            border-radius: 2px;
+        }
+
+        .apple-flying::after {
+            content: '';
+            position: absolute;
+            top: -6px;
+            left: 55%;
+            width: 10px;
+            height: 8px;
+            background: #27ae60;
+            border-radius: 50% 50% 50% 0;
+            transform: rotate(45deg);
+        }
+
+        body.light-colors .apple-flying {
+            background: radial-gradient(circle at 30% 30%, #ffb3b3, #e57373);
+        }
+
+        /* Selection boxes - one for each player */
+        .selection-box {
+            position: fixed;
+            pointer-events: none;
+            z-index: 1000;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .selection-box.p1 {
+            border: 3px dashed var(--p1-color);
+            background: rgba(255, 215, 0, 0.2);
+        }
+
+        .selection-box.p2 {
+            border: 3px dashed var(--p2-color);
+            background: rgba(0, 206, 209, 0.2);
+        }
+
+        /* Hint box - shows P2's valid selections to P1 */
+        .hint-box {
+            position: fixed;
+            pointer-events: none;
+            z-index: 999;
+            border-radius: 8px;
+            display: none;
+            border: 4px solid #00FF88;
+            background: rgba(0, 255, 136, 0.25);
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.6),
+                        inset 0 0 20px rgba(0, 255, 136, 0.3);
+            animation: hint-pulse 1s ease-in-out infinite;
+        }
+
+        .hint-box::before {
+            content: '👆 P2 found this!';
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #00FF88;
+            color: #1a1a1a;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            white-space: nowrap;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        @keyframes hint-pulse {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(0, 255, 136, 0.6),
+                            inset 0 0 20px rgba(0, 255, 136, 0.3);
+                transform: scale(1);
+            }
+            50% {
+                box-shadow: 0 0 35px rgba(0, 255, 136, 0.9),
+                            inset 0 0 30px rgba(0, 255, 136, 0.5);
+                transform: scale(1.02);
+            }
+        }
+
+        .instructions {
+            color: white;
+            text-align: center;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            font-size: clamp(12px, 2.5vw, 14px);
+            opacity: 0.9;
+            max-width: 480px;
+        }
+
+        .current-selection {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: clamp(16px, 3vw, 18px);
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 1001;
+        }
+
+        .current-selection.show {
+            opacity: 1;
+        }
+
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+            z-index: 1200;
+            padding: 20px;
+        }
+
+        .overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .overlay-content {
+            background: rgba(31, 95, 59, 0.95);
+            color: white;
+            border-radius: 16px;
+            padding: 24px 32px;
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.4);
+        }
+
+        .overlay-content h2 {
+            font-size: clamp(24px, 4vw, 32px);
+            margin-bottom: 12px;
+        }
+
+        .overlay-content p {
+            margin-bottom: 20px;
+            font-size: clamp(14px, 3vw, 18px);
+        }
+
+        .target-input {
+            width: 90px;
+            height: 40px;
+            font-size: clamp(18px, 3vw, 20px);
+            font-weight: bold;
+            text-align: center;
+            border: 2px solid #FFD700;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.1);
+            color: #FFD700;
+            outline: none;
+        }
+
+        .light-toggle {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: clamp(12px, 2.5vw, 14px);
+        }
+
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: white;
+            font-size: clamp(12px, 2.5vw, 14px);
+        }
+
+        .volume-control input[type="range"] {
+            width: 80px;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255,255,255,0.3);
+            outline: none;
+            cursor: pointer;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .volume-control input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #4CAF50;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            transition: transform 0.1s;
+        }
+
+        .volume-control input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        .volume-control input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #4CAF50;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        body.light-colors {
+            background: #4c8b64;
+        }
+
+        body.light-colors .game-container {
+            background: #a87345;
+        }
+
+        body.light-colors .game-board {
+            background: #8b5a2b;
+        }
+
+        body.light-colors .apple {
+            background: radial-gradient(circle at 30% 30%, #ffb3b3, #e57373);
+        }
+
+        @media (max-width: 600px) {
+            .game-info {
+                gap: 12px;
+            }
+
+            .controls {
+                gap: 8px;
+            }
+
+            button {
+                padding: 8px 16px;
+            }
+
+            .target-input {
+                width: 80px;
+                height: 38px;
+            }
+        }
+
+        /* Lobby View Styles */
+        .lobby-view {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            min-height: inherit;
+            padding: 20px;
+            gap: 30px;
+        }
+
+        .lobby-view.hidden {
+            display: none;
+        }
+
+        .lobby-title {
+            text-align: center;
+        }
+
+        .lobby-subtitle {
+            color: #d4a574;
+            font-size: clamp(20px, 4vw, 28px);
+            font-weight: bold;
+            margin-bottom: 5px;
+            letter-spacing: 1px;
+        }
+
+        .lobby-game-title {
+            font-size: clamp(48px, 10vw, 72px);
+            font-weight: bold;
+            margin: 0;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.4);
+        }
+
+        .lobby-game-title .fruit-part {
+            color: #ff6347;
+            text-shadow: 2px 2px 0 #000,
+                         -1px -1px 0 #fff,
+                         1px -1px 0 #fff,
+                         -1px 1px 0 #fff,
+                         1px 1px 0 #fff;
+        }
+
+        .lobby-game-title .box-part {
+            color: #7cb342;
+            text-shadow: 2px 2px 0 #000,
+                         -1px -1px 0 #fff,
+                         1px -1px 0 #fff,
+                         -1px 1px 0 #fff,
+                         1px 1px 0 #fff;
+        }
+
+        .multiplayer-badge {
+            background: linear-gradient(135deg, var(--p1-color), var(--p2-color));
+            color: #333;
+            font-size: clamp(14px, 2.5vw, 18px);
+            font-weight: bold;
+            padding: 8px 20px;
+            border-radius: 20px;
+            margin-top: 10px;
+            display: inline-block;
+        }
+
+        .lobby-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .lobby-buttons button {
+            min-width: 200px;
+            padding: 15px 30px;
+            font-size: clamp(16px, 3vw, 20px);
+        }
+
+        .create-room-btn {
+            background: var(--p1-color);
+            color: #333;
+        }
+
+        .create-room-btn:hover {
+            background: #e6c200;
+        }
+
+        .join-room-btn {
+            background: var(--p2-color);
+            color: #333;
+        }
+
+        .join-room-btn:hover {
+            background: #00b5b8;
+        }
+
+        .room-code-input {
+            width: 180px;
+            height: 50px;
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            border: 3px solid var(--p2-color);
+            border-radius: 10px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            outline: none;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+        }
+
+        .room-code-input::placeholder {
+            color: rgba(255,255,255,0.5);
+            letter-spacing: 2px;
+        }
+
+        .join-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .join-form.hidden {
+            display: none;
+        }
+
+        /* Waiting Room Styles */
+        .waiting-room {
+            text-align: center;
+            color: white;
+        }
+
+        .waiting-room.hidden {
+            display: none;
+        }
+
+        .room-code-display {
+            font-size: clamp(36px, 8vw, 56px);
+            font-weight: bold;
+            color: var(--p1-color);
+            letter-spacing: 8px;
+            margin: 20px 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .waiting-message {
+            font-size: clamp(16px, 3vw, 20px);
+            opacity: 0.9;
+            margin-bottom: 20px;
+        }
+
+        .player-list {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 20px 0;
+        }
+
+        .player-slot {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .player-slot.p1 {
+            background: var(--p1-color);
+            color: #333;
+        }
+
+        .player-slot.p2 {
+            background: var(--p2-color);
+            color: #333;
+        }
+
+        .player-slot.empty {
+            background: rgba(255,255,255,0.2);
+            border: 3px dashed rgba(255,255,255,0.4);
+            color: rgba(255,255,255,0.5);
+        }
+
+        .player-slot .player-label {
+            font-size: 14px;
+            opacity: 0.7;
+        }
+
+        .player-slot .player-role {
+            font-size: 18px;
+            margin-top: 5px;
+        }
+
+        .copy-btn {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.4);
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+
+        .copy-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        /* Home View Styles */
+        .home-view {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-evenly;
+            width: 100%;
+            height: 100%;
+            min-height: inherit;
+            padding: 20px;
+        }
+
+        .home-view.hidden {
+            display: none;
+        }
+
+        .home-title {
+            text-align: center;
+        }
+
+        .home-title.hidden {
+            display: none;
+        }
+
+        .home-subtitle {
+            color: #d4a574;
+            font-size: clamp(20px, 4vw, 28px);
+            font-weight: bold;
+            margin-bottom: 5px;
+            letter-spacing: 1px;
+        }
+
+        .home-game-title {
+            font-size: clamp(48px, 10vw, 72px);
+            font-weight: bold;
+            margin: 0;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.4);
+        }
+
+        .home-game-title .fruit-part {
+            color: #ff6347;
+            text-shadow: 2px 2px 0 #000,
+                         -1px -1px 0 #fff,
+                         1px -1px 0 #fff,
+                         -1px 1px 0 #fff,
+                         1px 1px 0 #fff;
+        }
+
+        .home-game-title .box-part {
+            color: #7cb342;
+            text-shadow: 2px 2px 0 #000,
+                         -1px -1px 0 #fff,
+                         1px -1px 0 #fff,
+                         -1px 1px 0 #fff,
+                         1px 1px 0 #fff;
+        }
+
+        .home-play-area {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: clamp(40px, 8vw, 100px);
+            width: 100%;
+            max-width: 900px;
+        }
+
+        button.play-button {
+            position: relative;
+            flex-shrink: 0;
+            width: clamp(140px, 20vw, 180px);
+            height: clamp(140px, 20vw, 180px);
+            background: radial-gradient(circle at 35% 35%, #ff6b6b, #d32f2f);
+            border-radius: 45% 50% 45% 50%;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(28px, 5vw, 42px);
+            font-weight: bold;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+            transition: transform 0.2s, box-shadow 0.2s;
+            padding: 0;
+        }
+
+        .play-button::before {
+            content: '';
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 25px;
+            background: #8b4513;
+            border-radius: 0 0 50% 50%;
+        }
+
+        .play-button::after {
+            content: '';
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%) rotate(-20deg);
+            width: 35px;
+            height: 20px;
+            background: #4caf50;
+            border-radius: 50% 50% 50% 0;
+        }
+
+        button.play-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            background: radial-gradient(circle at 35% 35%, #ff8a8a, #e53935);
+        }
+
+        button.play-button:active {
+            transform: scale(0.98);
+        }
+
+        button.play-button:disabled {
+            background: radial-gradient(circle at 35% 35%, #888, #666);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .decorative-apples {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: clamp(10px, 2vw, 20px);
+            pointer-events: none;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .deco-apple {
+            position: relative;
+            width: clamp(60px, 10vw, 80px);
+            height: clamp(60px, 10vw, 80px);
+            background: radial-gradient(circle at 35% 35%, #ff6b6b, #d32f2f);
+            border-radius: 45% 50% 45% 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(24px, 4vw, 36px);
+            font-weight: bold;
+            color: white;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+            pointer-events: none;
+        }
+
+        .deco-apple::before {
+            content: '';
+            position: absolute;
+            top: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 12px;
+            height: 15px;
+            background: #8b4513;
+            border-radius: 0 0 50% 50%;
+        }
+
+        .deco-apple::after {
+            content: '';
+            position: absolute;
+            top: -12px;
+            left: 55%;
+            width: 14px;
+            height: 10px;
+            background: #4caf50;
+            border-radius: 50% 50% 50% 0;
+            transform: rotate(45deg);
+        }
+
+        .deco-apple.hidden-apple {
+            visibility: hidden;
+        }
+
+        .home-bottom-controls {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 15px;
+            color: white;
+        }
+
+        .home-bottom-controls.hidden {
+            display: none;
+        }
+
+        .home-bottom-controls button {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+
+        .home-bottom-controls button:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .score-history {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            color: white;
+            max-width: 200px;
+        }
+
+        .score-history-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #FFD700;
+        }
+
+        .score-history-item {
+            padding: 2px 0;
+        }
+
+        .score-history:empty {
+            display: none;
+        }
+
+        .game-board-view {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .game-board-view.hidden {
+            display: none;
+        }
+
+        /* Connection status */
+        .connection-status {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            z-index: 1300;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .connection-status.connected {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .connection-status.disconnected {
+            background: #f44336;
+            color: white;
+        }
+
+        .connection-status .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Remote player indicator */
+        .remote-player-indicator {
+            position: fixed;
+            top: 50px;
+            right: 10px;
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-size: 12px;
+            background: var(--p2-color);
+            color: #333;
+            z-index: 1300;
+            display: none;
+        }
+
+        .remote-player-indicator.show {
+            display: block;
+        }
+
+        /* Error message */
+        .error-toast {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #f44336;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 1400;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+
+        .error-toast.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <!-- Connection status indicator -->
+    <div class="connection-status disconnected" id="connection-status">
+        <span class="status-dot"></span>
+        <span id="status-text">Connecting...</span>
+    </div>
+
+    <!-- Remote player indicator -->
+    <div class="remote-player-indicator" id="remote-player-indicator">
+        P2 is drawing...
+    </div>
+
+    <!-- Error toast -->
+    <div class="error-toast" id="error-toast"></div>
+
+    <!-- Game info and controls (hidden until game starts) -->
+    <div class="game-info hidden" id="game-info">
+        <span class="player-badge" id="player-badge">Player ?</span>
+        <span>Room: <strong id="room-display">----</strong></span>
+        <span>Score: <strong id="score">0</strong></span>
+        <span>Target: <strong id="target-display">10</strong></span>
+        <span>Layout: <strong id="layout-display">10×17</strong></span>
+        <span>Apples Left: <strong id="apples-left">0</strong></span>
+        <span>Time: <strong id="time-remaining">120</strong></span>
+    </div>
+    <div class="controls hidden" id="game-controls">
+        <label>Target</label>
+        <input type="number" class="target-input" id="target-input" value="10" min="1" max="100">
+        <label>Time (sec)</label>
+        <input type="number" class="target-input" id="time-input" value="120" min="10" max="600" step="10">
+        <button onclick="startGame()" id="start-game-btn">Start Game</button>
+        <button id="bgm-toggle" type="button">Music: On</button>
+        <label class="volume-control">
+            🔊 <input type="range" id="volume-slider" min="0" max="100" value="40">
+        </label>
+        <label class="light-toggle">
+            <input type="checkbox" id="light-toggle">
+            Light Colors
+        </label>
+        <label class="light-toggle">
+            <input type="checkbox" id="compact-toggle">
+            Compact Board
+        </label>
+    </div>
+
+    <!-- Game area container (brown box) -->
+    <div class="game-area-container" id="game-area-container">
+        <!-- Lobby view (initial) -->
+        <div class="lobby-view" id="lobby-view">
+            <div class="lobby-title">
+                <div class="lobby-subtitle">GameBurton</div>
+                <h1 class="lobby-game-title">
+                    <span class="fruit-part">Fruit</span> <span class="box-part">Box</span>
+                </h1>
+                <div class="multiplayer-badge">🎮 2-Player Mode</div>
+            </div>
+
+            <div class="lobby-buttons" id="lobby-buttons">
+                <button class="create-room-btn" id="create-room-btn">🍎 Create Room (Player 1)</button>
+                <button class="join-room-btn" id="show-join-btn">🍏 Join Room (Player 2)</button>
+            </div>
+
+            <div class="join-form hidden" id="join-form">
+                <input type="text" class="room-code-input" id="room-code-input" 
+                       placeholder="CODE" maxlength="6" autocomplete="off">
+                <button class="join-room-btn" id="join-room-btn">Join Room</button>
+                <button id="back-to-lobby-btn">← Back</button>
+            </div>
+
+            <!-- Waiting room (shown after creating/joining) -->
+            <div class="waiting-room hidden" id="waiting-room">
+                <p class="waiting-message">Share this code with Player 2:</p>
+                <div class="room-code-display" id="room-code-display">------</div>
+                <button class="copy-btn" id="copy-code-btn">📋 Copy Code</button>
+                
+                <div class="player-list">
+                    <div class="player-slot p1" id="p1-slot">
+                        <span class="player-label">Player 1</span>
+                        <span class="player-role">🍎 Scorer</span>
+                    </div>
+                    <div class="player-slot p2 empty" id="p2-slot">
+                        <span class="player-label">Player 2</span>
+                        <span class="player-role">Waiting...</span>
+                    </div>
+                </div>
+
+                <p class="waiting-message" id="waiting-status">Waiting for Player 2 to join...</p>
+                <button id="leave-room-btn">Leave Room</button>
+            </div>
+        </div>
+
+        <!-- Home view (after room is full) -->
+        <div class="home-view hidden" id="home-view">
+            <div class="home-title" id="home-title">
+                <div class="home-subtitle">GameBurton</div>
+                <h1 class="home-game-title">
+                    <span class="fruit-part">Fruit</span> <span class="box-part">Box</span>
+                </h1>
+            </div>
+
+            <div class="home-play-area">
+                <button class="play-button" id="home-play-btn">Play</button>
+                <div class="decorative-apples">
+                    <div class="deco-apple">5</div>
+                    <div class="deco-apple">7</div>
+                    <div class="deco-apple">6</div>
+                    <div class="deco-apple">8</div>
+                    <div class="deco-apple hidden-apple"></div>
+                    <div class="deco-apple">3</div>
+                    <div class="deco-apple">2</div>
+                    <div class="deco-apple">9</div>
+                    <div class="deco-apple">1</div>
+                    <div class="deco-apple hidden-apple"></div>
+                    <div class="deco-apple">4</div>
+                    <div class="deco-apple hidden-apple"></div>
+                </div>
+            </div>
+
+            <div class="score-history" id="score-history"></div>
+        </div>
+
+        <!-- Game board view (hidden initially) -->
+        <div class="game-board-view hidden" id="game-board-view">
+            <div class="game-container" id="game-container">
+                <div class="game-board" id="game-board"></div>
+            </div>
+            <div class="instructions" id="instructions">
+                Drag to select apples that sum to exactly 10. Get 1 point per apple!
+            </div>
+        </div>
+    </div>
+
+    <!-- Selection boxes - one for each player -->
+    <div class="selection-box p1" id="selection-box-p1"></div>
+    <div class="selection-box p2" id="selection-box-p2"></div>
+    
+    <!-- Hint box - shows P2's valid selections to P1 -->
+    <div class="hint-box" id="hint-box"></div>
+
+    <div class="current-selection" id="current-selection">Sum: 0</div>
+
+    <!-- Overlay for victory/game over -->
+    <div class="overlay" id="overlay">
+        <div class="overlay-content">
+            <h2 id="overlay-title">Game Over</h2>
+            <p id="overlay-message">Great job! Your score: 0</p>
+            <button id="overlay-restart">Play Again</button>
+        </div>
+    </div>
+
+    <audio id="bgm" src="3.mp3"></audio>
+
+    <!-- Socket.IO client -->
+    <script src="/socket.io/socket.io.js"></script>
+
+    <script>
+        // ============================================================
+        // MULTIPLAYER FRUIT BOX
+        // ============================================================
+
+        // Socket.IO connection
+        let socket = null;
+        let isConnected = false;
+        let currentRoom = null;
+        let playerNumber = null; // 1 or 2
+        let isHost = false;
+
+        // Game constants
+        const DEFAULT_LAYOUT = { rows: 10, cols: 17 };
+        const COMPACT_LAYOUT = { rows: 8, cols: 12 };
+        let ROWS = DEFAULT_LAYOUT.rows;
+        let COLS = DEFAULT_LAYOUT.cols;
+        let TIME_LIMIT_SECONDS = 120;
+
+        // Game state
+        let board = [];
+        let score = 0;
+        let targetSum = 10;
+        let isSelecting = false;
+        let startX = 0;
+        let startY = 0;
+        let selectedCells = [];
+        let appleElements = [];
+        let activePointerId = null;
+        let gameOver = false;
+        let timerInterval = null;
+        let timeStart = null;
+        let bgmEnabled = true;
+        let gameScores = [];
+
+        // DOM elements
+        const connectionStatus = document.getElementById('connection-status');
+        const statusText = document.getElementById('status-text');
+        const remotePlayerIndicator = document.getElementById('remote-player-indicator');
+        const errorToast = document.getElementById('error-toast');
+        const gameInfo = document.getElementById('game-info');
+        const gameControls = document.getElementById('game-controls');
+        const playerBadge = document.getElementById('player-badge');
+        const roomDisplay = document.getElementById('room-display');
+
+        const lobbyView = document.getElementById('lobby-view');
+        const lobbyButtons = document.getElementById('lobby-buttons');
+        const joinForm = document.getElementById('join-form');
+        const waitingRoom = document.getElementById('waiting-room');
+        const createRoomBtn = document.getElementById('create-room-btn');
+        const showJoinBtn = document.getElementById('show-join-btn');
+        const roomCodeInput = document.getElementById('room-code-input');
+        const joinRoomBtn = document.getElementById('join-room-btn');
+        const backToLobbyBtn = document.getElementById('back-to-lobby-btn');
+        const roomCodeDisplay = document.getElementById('room-code-display');
+        const copyCodeBtn = document.getElementById('copy-code-btn');
+        const p1Slot = document.getElementById('p1-slot');
+        const p2Slot = document.getElementById('p2-slot');
+        const waitingStatus = document.getElementById('waiting-status');
+        const leaveRoomBtn = document.getElementById('leave-room-btn');
+
+        const homeView = document.getElementById('home-view');
+        const homePlayBtn = document.getElementById('home-play-btn');
+        const scoreHistory = document.getElementById('score-history');
+        const startGameBtn = document.getElementById('start-game-btn');
+
+        const gameBoardView = document.getElementById('game-board-view');
+        const gameBoard = document.getElementById('game-board');
+        const gameContainer = document.getElementById('game-container');
+        const gameAreaContainer = document.getElementById('game-area-container');
+        const selectionBoxP1 = document.getElementById('selection-box-p1');
+        const selectionBoxP2 = document.getElementById('selection-box-p2');
+        const hintBox = document.getElementById('hint-box');
+        let hintTimeout = null;
+        const scoreDisplay = document.getElementById('score');
+        const targetDisplayGame = document.getElementById('target-display');
+        const applesLeftDisplay = document.getElementById('apples-left');
+        const currentSelectionDisplay = document.getElementById('current-selection');
+        const instructionsDisplay = document.getElementById('instructions');
+        const targetInput = document.getElementById('target-input');
+        const timeInput = document.getElementById('time-input');
+        const lightToggle = document.getElementById('light-toggle');
+        const compactToggle = document.getElementById('compact-toggle');
+        const timeRemainingDisplay = document.getElementById('time-remaining');
+        const overlay = document.getElementById('overlay');
+        const overlayTitle = document.getElementById('overlay-title');
+        const overlayMessage = document.getElementById('overlay-message');
+        const overlayRestart = document.getElementById('overlay-restart');
+        const bgm = document.getElementById('bgm');
+        const bgmToggle = document.getElementById('bgm-toggle');
+        const volumeSlider = document.getElementById('volume-slider');
+        const rootStyle = document.documentElement.style;
+        const layoutDisplay = document.getElementById('layout-display');
+
+        // Get my selection box based on player number
+        function getMySelectionBox() {
+            return playerNumber === 1 ? selectionBoxP1 : selectionBoxP2;
+        }
+
+        function getRemoteSelectionBox() {
+            return playerNumber === 1 ? selectionBoxP2 : selectionBoxP1;
+        }
+
+        // ============================================================
+        // SOCKET.IO CONNECTION
+        // ============================================================
+
+        function initSocket() {
+            socket = io();
+
+            socket.on('connect', () => {
+                isConnected = true;
+                connectionStatus.className = 'connection-status connected';
+                statusText.textContent = 'Connected';
+                console.log('Connected to server');
+            });
+
+            socket.on('disconnect', () => {
+                isConnected = false;
+                connectionStatus.className = 'connection-status disconnected';
+                statusText.textContent = 'Disconnected';
+                console.log('Disconnected from server');
+            });
+
+            // Room events
+            socket.on('player-joined', (data) => {
+                console.log('Player 2 joined!');
+                p2Slot.classList.remove('empty');
+                p2Slot.querySelector('.player-role').textContent = '🍏 Helper';
+                waitingStatus.textContent = 'Player 2 has joined! Ready to play.';
+                
+                // Show home view after both players are in
+                setTimeout(() => {
+                    showHomeViewMultiplayer();
+                }, 1000);
+            });
+
+            socket.on('player-left', (data) => {
+                console.log('Player left:', data);
+                showError(`Player ${data.playerNumber} has left the room`);
+                
+                if (data.remaining === 0) {
+                    // Room is empty, return to lobby
+                    returnToLobby();
+                }
+            });
+
+            socket.on('promoted-to-host', () => {
+                playerNumber = 1;
+                isHost = true;
+                updatePlayerBadge();
+                showError('You are now the host (Player 1)');
+            });
+
+            // Game events
+            socket.on('game-started', (gameState) => {
+                console.log('Game started:', gameState);
+                board = gameState.board;
+                targetSum = gameState.targetSum;
+                TIME_LIMIT_SECONDS = gameState.timeLimit;
+                ROWS = gameState.rows;
+                COLS = gameState.cols;
+                
+                score = 0;
+                scoreDisplay.textContent = score;
+                targetDisplayGame.textContent = targetSum;
+                timeRemainingDisplay.textContent = TIME_LIMIT_SECONDS;
+                gameOver = false;
+                
+                showGameView();
+                renderBoard();
+                startTimer();
+            });
+
+            socket.on('game-state-sync', (gameState) => {
+                if (gameState) {
+                    board = gameState.board;
+                    score = gameState.score;
+                    targetSum = gameState.targetSum;
+                    ROWS = gameState.rows;
+                    COLS = gameState.cols;
+                    scoreDisplay.textContent = score;
+                }
+            });
+
+            socket.on('game-state-update', (update) => {
+                score = update.score;
+                scoreDisplay.textContent = score;
+                
+                // Only update board and re-render for P2
+                // P1 already updated locally to avoid double-render
+                if (playerNumber !== 1) {
+                    board = update.board;
+                    
+                    // Animate removed apples
+                    if (update.removedApples) {
+                        animateRemoteAppleRemoval(update.removedApples);
+                    }
+                    
+                    renderBoard();
+                }
+            });
+
+            // Remote selection events
+            socket.on('remote-selection', (data) => {
+                if (data.playerNumber !== playerNumber) {
+                    updateRemoteSelectionBox(data);
+                    
+                    // Show indicator
+                    remotePlayerIndicator.textContent = `P${data.playerNumber} is selecting...`;
+                    remotePlayerIndicator.classList.add('show');
+                }
+            });
+
+            socket.on('remote-selection-end', (data) => {
+                if (data.playerNumber !== playerNumber) {
+                    hideRemoteSelectionBox();
+                    remotePlayerIndicator.classList.remove('show');
+                }
+            });
+
+            // P2 found a valid selection - show hint to P1
+            socket.on('show-hint', (hintData) => {
+                if (playerNumber === 1) {
+                    showHintBox(hintData.x, hintData.y, hintData.width, hintData.height);
+                    console.log('P2 found valid selection:', hintData);
+                }
+            });
+
+            socket.on('game-ended', (result) => {
+                gameOver = true;
+                stopTimer();
+                gameScores.push(result.score);
+                showOverlay(result.title, result.message);
+            });
+
+            socket.on('lobby-return', () => {
+                hideOverlay();
+                showHomeViewMultiplayer();
+            });
+        }
+
+        function updateRemoteSelectionBox(data) {
+            const box = getRemoteSelectionBox();
+            if (data.visible) {
+                box.style.left = `${data.x}px`;
+                box.style.top = `${data.y}px`;
+                box.style.width = `${data.width}px`;
+                box.style.height = `${data.height}px`;
+                box.style.display = 'block';
+            } else {
+                box.style.display = 'none';
+            }
+        }
+
+        function hideRemoteSelectionBox() {
+            const box = getRemoteSelectionBox();
+            box.style.display = 'none';
+        }
+
+        // Show hint box when P2 finds a valid selection
+        function showHintBox(x, y, width, height) {
+            // Clear any existing timeout
+            if (hintTimeout) {
+                clearTimeout(hintTimeout);
+            }
+            
+            hintBox.style.left = `${x}px`;
+            hintBox.style.top = `${y}px`;
+            hintBox.style.width = `${width}px`;
+            hintBox.style.height = `${height}px`;
+            hintBox.style.display = 'block';
+            
+            // Auto-hide after 5 seconds
+            hintTimeout = setTimeout(() => {
+                hideHintBox();
+            }, 5000);
+        }
+
+        function hideHintBox() {
+            hintBox.style.display = 'none';
+            if (hintTimeout) {
+                clearTimeout(hintTimeout);
+                hintTimeout = null;
+            }
+        }
+
+        function animateRemoteAppleRemoval(removedApples) {
+            // Find and animate the removed apples
+            removedApples.forEach(apple => {
+                const cell = document.querySelector(`.apple[data-row="${apple.row}"][data-col="${apple.col}"]`);
+                if (cell) {
+                    createFlyingApple({
+                        element: cell,
+                        value: apple.value,
+                        rect: cell.getBoundingClientRect()
+                    });
+                    cell.classList.add('removed');
+                }
+            });
+        }
+
+        // ============================================================
+        // VIEW MANAGEMENT
+        // ============================================================
+
+        function showLobbyView() {
+            lobbyView.classList.remove('hidden');
+            lobbyButtons.classList.remove('hidden');
+            joinForm.classList.add('hidden');
+            waitingRoom.classList.add('hidden');
+            homeView.classList.add('hidden');
+            gameBoardView.classList.add('hidden');
+            gameInfo.classList.add('hidden');
+            gameControls.classList.add('hidden');
+        }
+
+        function showJoinForm() {
+            lobbyButtons.classList.add('hidden');
+            joinForm.classList.remove('hidden');
+            roomCodeInput.value = '';
+            roomCodeInput.focus();
+        }
+
+        function showWaitingRoom(code) {
+            lobbyButtons.classList.add('hidden');
+            joinForm.classList.add('hidden');
+            waitingRoom.classList.remove('hidden');
+            roomCodeDisplay.textContent = code;
+            
+            if (playerNumber === 1) {
+                waitingStatus.textContent = 'Waiting for Player 2 to join...';
+                p2Slot.classList.add('empty');
+                p2Slot.querySelector('.player-role').textContent = 'Waiting...';
+            } else {
+                waitingStatus.textContent = 'Waiting for host to start...';
+                p2Slot.classList.remove('empty');
+                p2Slot.querySelector('.player-role').textContent = '🍏 Helper (You)';
+            }
+        }
+
+        function showHomeViewMultiplayer() {
+            lobbyView.classList.add('hidden');
+            homeView.classList.remove('hidden');
+            gameBoardView.classList.add('hidden');
+            gameInfo.classList.add('hidden');
+            
+            // Only show controls for P1 (host)
+            if (playerNumber === 1) {
+                gameControls.classList.remove('hidden');
+                homePlayBtn.disabled = false;
+                homePlayBtn.textContent = 'Start';
+            } else {
+                gameControls.classList.add('hidden');
+                homePlayBtn.disabled = true;
+                homePlayBtn.textContent = 'Wait...';
+            }
+            
+            updateScoreHistory();
+        }
+
+        function showGameView() {
+            lobbyView.classList.add('hidden');
+            homeView.classList.add('hidden');
+            gameBoardView.classList.remove('hidden');
+            gameInfo.classList.remove('hidden');
+            
+            // Show controls only for P1
+            if (playerNumber === 1) {
+                gameControls.classList.remove('hidden');
+            } else {
+                gameControls.classList.add('hidden');
+            }
+            
+            updatePlayerBadge();
+        }
+
+        function updatePlayerBadge() {
+            playerBadge.textContent = `Player ${playerNumber}`;
+            playerBadge.className = `player-badge p${playerNumber}`;
+            roomDisplay.textContent = currentRoom || '----';
+            
+            // Update instructions based on player role
+            if (playerNumber === 1) {
+                instructionsDisplay.textContent = `Drag to select apples that sum to exactly ${targetSum}. Get 1 point per apple!`;
+            } else {
+                instructionsDisplay.textContent = `Draw boxes to help Player 1 find combinations that sum to ${targetSum}. Your selections don't score.`;
+            }
+        }
+
+        function returnToLobby() {
+            currentRoom = null;
+            playerNumber = null;
+            isHost = false;
+            gameOver = true;
+            stopTimer();
+            showLobbyView();
+        }
+
+        function updateScoreHistory() {
+            if (gameScores.length === 0) {
+                scoreHistory.innerHTML = '';
+                return;
+            }
+
+            let html = '<div class="score-history-title">Score History</div>';
+            gameScores.forEach((s, index) => {
+                html += `<div class="score-history-item">Game ${index + 1}: ${s}</div>`;
+            });
+            scoreHistory.innerHTML = html;
+        }
+
+        function showError(message) {
+            errorToast.textContent = message;
+            errorToast.classList.add('show');
+            setTimeout(() => {
+                errorToast.classList.remove('show');
+            }, 3000);
+        }
+
+        // ============================================================
+        // ROOM MANAGEMENT
+        // ============================================================
+
+        function createRoom() {
+            if (!isConnected) {
+                showError('Not connected to server');
+                return;
+            }
+
+            socket.emit('create-room', (response) => {
+                if (response.success) {
+                    currentRoom = response.roomCode;
+                    playerNumber = response.playerNumber;
+                    isHost = true;
+                    showWaitingRoom(currentRoom);
+                } else {
+                    showError('Failed to create room');
+                }
+            });
+        }
+
+        function joinRoom() {
+            if (!isConnected) {
+                showError('Not connected to server');
+                return;
+            }
+
+            const code = roomCodeInput.value.toUpperCase().trim();
+            if (code.length !== 6) {
+                showError('Please enter a 6-character room code');
+                return;
+            }
+
+            socket.emit('join-room', code, (response) => {
+                if (response.success) {
+                    currentRoom = response.roomCode;
+                    playerNumber = response.playerNumber;
+                    isHost = false;
+                    
+                    if (response.gameStarted) {
+                        // Game already in progress
+                        showGameView();
+                        if (response.gameState) {
+                            board = response.gameState.board;
+                            score = response.gameState.score;
+                            renderBoard();
+                        }
+                    } else {
+                        showWaitingRoom(currentRoom);
+                        // Immediately show home view since P2 joining completes the room
+                        setTimeout(() => {
+                            showHomeViewMultiplayer();
+                        }, 500);
+                    }
+                } else {
+                    showError(response.error || 'Failed to join room');
+                }
+            });
+        }
+
+        function copyRoomCode() {
+            navigator.clipboard.writeText(currentRoom).then(() => {
+                copyCodeBtn.textContent = '✓ Copied!';
+                setTimeout(() => {
+                    copyCodeBtn.textContent = '📋 Copy Code';
+                }, 2000);
+            }).catch(() => {
+                showError('Failed to copy code');
+            });
+        }
+
+        function leaveRoom() {
+            socket.disconnect();
+            socket.connect();
+            returnToLobby();
+        }
+
+        // ============================================================
+        // GAME LOGIC
+        // ============================================================
+
+        function startGame() {
+            if (playerNumber !== 1) {
+                showError('Only Player 1 can start the game');
+                return;
+            }
+
+            // Get target from input
+            let inputValue = parseInt(targetInput.value);
+            if (isNaN(inputValue) || inputValue < 1) inputValue = 1;
+            if (inputValue > 100) inputValue = 100;
+            targetSum = inputValue;
+            targetInput.value = targetSum;
+
+            // Get time limit from input
+            let timeValue = parseInt(timeInput.value);
+            if (isNaN(timeValue) || timeValue < 10) timeValue = 10;
+            if (timeValue > 600) timeValue = 600;
+            timeValue = Math.round(timeValue / 10) * 10;
+            TIME_LIMIT_SECONDS = timeValue;
+            timeInput.value = TIME_LIMIT_SECONDS;
+
+            targetDisplayGame.textContent = targetSum;
+            instructionsDisplay.textContent = `Drag to select apples that sum to exactly ${targetSum}. Get 1 point per apple!`;
+            
+            newGame();
+        }
+
+        function newGame() {
+            score = 0;
+            scoreDisplay.textContent = score;
+            gameOver = false;
+            hideOverlay();
+            
+            do {
+                generateBoard();
+            } while (!checkForMoves());
+            
+            // Emit game start to server
+            socket.emit('start-game', {
+                board: board,
+                targetSum: targetSum,
+                timeLimit: TIME_LIMIT_SECONDS,
+                rows: ROWS,
+                cols: COLS
+            });
+        }
+
+        function updateLayoutDisplay() {
+            layoutDisplay.textContent = `${ROWS}×${COLS}`;
+        }
+
+        function setLayout(isCompact, { restart = true } = {}) {
+            const layout = isCompact ? COMPACT_LAYOUT : DEFAULT_LAYOUT;
+            ROWS = layout.rows;
+            COLS = layout.cols;
+            updateLayoutDisplay();
+            if (restart && playerNumber === 1) {
+                startGame();
+                return;
+            }
+            updateLayout();
+        }
+
+        function updateLayout() {
+            const containerRect = gameAreaContainer.getBoundingClientRect();
+            const paddingX = 40;
+            const paddingY = 40;
+            
+            const boardStyles = getComputedStyle(gameBoard);
+            const boardPaddingX = parseFloat(boardStyles.paddingLeft) + parseFloat(boardStyles.paddingRight) || 20;
+            const boardPaddingY = parseFloat(boardStyles.paddingTop) + parseFloat(boardStyles.paddingBottom) || 20;
+            const gridGap = parseFloat(boardStyles.gap) || 5;
+
+            const instructionsHeight = instructionsDisplay.offsetHeight || 30;
+            const instructionsMargin = 40;
+
+            const maxWidth = containerRect.width - paddingX - boardPaddingX;
+            const maxHeight = containerRect.height - paddingY - boardPaddingY - instructionsHeight - instructionsMargin;
+
+            const totalGapWidth = gridGap * (COLS - 1);
+            const totalGapHeight = gridGap * (ROWS - 1);
+
+            const widthBased = Math.floor((maxWidth - totalGapWidth) / COLS);
+            const heightBased = Math.floor((maxHeight - totalGapHeight) / ROWS);
+            
+            const cellSize = Math.max(28, Math.min(60, Math.min(widthBased, heightBased)));
+
+            rootStyle.setProperty('--cell-size', `${cellSize}px`);
+            gameBoard.style.width = `${cellSize * COLS + totalGapWidth}px`;
+            gameBoard.style.height = `${cellSize * ROWS + totalGapHeight}px`;
+        }
+
+        function generateBoard() {
+            board = [];
+            const maxValue = Math.min(9, targetSum - 1);
+            let totalSum = 0;
+
+            for (let r = 0; r < ROWS; r++) {
+                board[r] = [];
+                for (let c = 0; c < COLS; c++) {
+                    const num = Math.floor(Math.random() * maxValue) + 1;
+                    board[r][c] = num;
+                    totalSum += num;
+                }
+            }
+
+            const remainder = totalSum % targetSum;
+            if (remainder !== 0) {
+                const lastRow = ROWS - 1;
+                const lastCol = COLS - 1;
+                const adjustment = targetSum - remainder;
+                
+                let newLastValue = board[lastRow][lastCol] + adjustment;
+                
+                if (newLastValue <= maxValue) {
+                    board[lastRow][lastCol] = newLastValue;
+                } else {
+                    let neededAdjustment = adjustment;
+                    for (let r = ROWS - 1; r >= 0 && neededAdjustment > 0; r--) {
+                        for (let c = COLS - 1; c >= 0 && neededAdjustment > 0; c--) {
+                            const currentVal = board[r][c];
+                            const canAdd = maxValue - currentVal;
+                            if (canAdd > 0) {
+                                const addAmount = Math.min(canAdd, neededAdjustment);
+                                board[r][c] += addAmount;
+                                neededAdjustment -= addAmount;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        function renderBoard() {
+            updateLayout();
+            gameBoard.style.gridTemplateColumns = `repeat(${COLS}, var(--cell-size))`;
+            gameBoard.innerHTML = '';
+            appleElements = [];
+
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.dataset.row = r;
+                    cell.dataset.col = c;
+
+                    if (board[r][c] !== null) {
+                        const apple = document.createElement('div');
+                        apple.className = 'apple';
+                        apple.textContent = board[r][c];
+                        apple.dataset.row = r;
+                        apple.dataset.col = c;
+                        apple.dataset.value = board[r][c];
+                        cell.appendChild(apple);
+                    } else {
+                        cell.classList.add('empty');
+                    }
+
+                    gameBoard.appendChild(cell);
+                }
+            }
+
+            requestAnimationFrame(() => {
+                cacheApplePositions();
+            });
+
+            checkGameState();
+        }
+
+        function cacheApplePositions() {
+            appleElements = [];
+            document.querySelectorAll('.apple').forEach(apple => {
+                const rect = apple.getBoundingClientRect();
+                appleElements.push({
+                    element: apple,
+                    row: parseInt(apple.dataset.row),
+                    col: parseInt(apple.dataset.col),
+                    value: parseInt(apple.dataset.value),
+                    centerX: rect.left + rect.width / 2,
+                    centerY: rect.top + rect.height / 2,
+                    rect: rect
+                });
+            });
+        }
+
+        function updateApplesLeft() {
+            let count = 0;
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    if (board[r][c] !== null) count++;
+                }
+            }
+            applesLeftDisplay.textContent = count;
+            return count;
+        }
+
+        function checkForMoves() {
+            const prefix = Array.from({ length: ROWS + 1 }, () => Array(COLS + 1).fill(0));
+
+            for (let r = 1; r <= ROWS; r++) {
+                for (let c = 1; c <= COLS; c++) {
+                    const value = board[r - 1][c - 1] ?? 0;
+                    prefix[r][c] = value + prefix[r - 1][c] + prefix[r][c - 1] - prefix[r - 1][c - 1];
+                }
+            }
+
+            for (let top = 0; top < ROWS; top++) {
+                for (let bottom = top; bottom < ROWS; bottom++) {
+                    for (let left = 0; left < COLS; left++) {
+                        for (let right = left; right < COLS; right++) {
+                            const sum = prefix[bottom + 1][right + 1]
+                                - prefix[top][right + 1]
+                                - prefix[bottom + 1][left]
+                                + prefix[top][left];
+                            if (sum === targetSum) {
+                                return true;
+                            }
+                            if (sum > targetSum) {
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        function getEnclosedApples(x1, y1, x2, y2) {
+            const minX = Math.min(x1, x2);
+            const maxX = Math.max(x1, x2);
+            const minY = Math.min(y1, y2);
+            const maxY = Math.max(y1, y2);
+
+            const enclosed = [];
+
+            appleElements.forEach(apple => {
+                if (apple.centerX >= minX && apple.centerX <= maxX &&
+                    apple.centerY >= minY && apple.centerY <= maxY) {
+                    enclosed.push(apple);
+                }
+            });
+
+            return enclosed;
+        }
+
+        function updateSelectionBox(x1, y1, x2, y2) {
+            const minX = Math.min(x1, x2);
+            const maxX = Math.max(x1, x2);
+            const minY = Math.min(y1, y2);
+            const maxY = Math.max(y1, y2);
+
+            const box = getMySelectionBox();
+            box.style.left = `${minX}px`;
+            box.style.top = `${minY}px`;
+            box.style.width = `${maxX - minX}px`;
+            box.style.height = `${maxY - minY}px`;
+            box.style.display = 'block';
+
+            // Emit selection to other players
+            socket.emit('selection-update', {
+                visible: true,
+                x: minX,
+                y: minY,
+                width: maxX - minX,
+                height: maxY - minY
+            });
+        }
+
+        function highlightApples(apples) {
+            document.querySelectorAll('.apple.selected').forEach(el => {
+                el.classList.remove('selected');
+            });
+
+            apples.forEach(apple => {
+                apple.element.classList.add('selected');
+            });
+        }
+
+        function calculateSum(apples) {
+            return apples.reduce((sum, apple) => sum + apple.value, 0);
+        }
+
+        let physicsDirection = 1;
+
+        function createFlyingApple(appleData) {
+            const { element, value, rect } = appleData;
+            
+            const flyingApple = document.createElement('div');
+            flyingApple.className = 'apple-flying';
+            flyingApple.textContent = value;
+            flyingApple.style.width = `${rect.width}px`;
+            flyingApple.style.height = `${rect.height}px`;
+            flyingApple.style.left = `${rect.left}px`;
+            flyingApple.style.top = `${rect.top}px`;
+            document.body.appendChild(flyingApple);
+
+            const direction = physicsDirection;
+            physicsDirection *= -1;
+            
+            const initialVelocityX = (Math.random() * 20) * 1.2 * direction;
+            const initialVelocityY = -Math.random() * 25;
+            const rotationSpeed = 3 * direction;
+            const gravity = 0.07;
+            
+            let x = rect.left;
+            let y = rect.top;
+            let rotation = 0;
+            let time = 0;
+
+            function animate() {
+                time += 2;
+                
+                x += initialVelocityX;
+                y += initialVelocityY + gravity * time * time;
+                rotation += rotationSpeed;
+
+                flyingApple.style.left = `${x}px`;
+                flyingApple.style.top = `${y}px`;
+                flyingApple.style.transform = `rotate(${rotation}deg)`;
+
+                if (time < 45) {
+                    requestAnimationFrame(animate);
+                } else {
+                    flyingApple.remove();
+                }
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        function removeApples(apples) {
+            apples.forEach(apple => {
+                createFlyingApple(apple);
+                apple.element.classList.add('removed');
+                board[apple.row][apple.col] = null;
+            });
+
+            setTimeout(() => {
+                renderBoard();
+            }, 100);
+        }
+
+        function showFeedback(sum, valid, count) {
+            currentSelectionDisplay.textContent = valid ? `+${count} points!` : `Sum: ${sum} (need ${targetSum})`;
+            currentSelectionDisplay.className = 'current-selection show';
+
+            setTimeout(() => {
+                currentSelectionDisplay.classList.remove('show');
+            }, 1000);
+        }
+
+        function shouldIgnoreTarget(target) {
+            return target.closest('button') || target.closest('input') || target.closest('label');
+        }
+
+        function startSelection(clientX, clientY) {
+            if (gameOver) return;
+            isSelecting = true;
+            startX = clientX;
+            startY = clientY;
+
+            // Hide any existing hint when starting new selection
+            if (playerNumber === 1) {
+                hideHintBox();
+            }
+
+            cacheApplePositions();
+
+            updateSelectionBox(startX, startY, startX, startY);
+            currentSelectionDisplay.textContent = 'Sum: 0';
+            currentSelectionDisplay.classList.add('show');
+        }
+
+        function updateSelection(clientX, clientY) {
+            updateSelectionBox(startX, startY, clientX, clientY);
+
+            selectedCells = getEnclosedApples(startX, startY, clientX, clientY);
+            highlightApples(selectedCells);
+
+            const sum = calculateSum(selectedCells);
+            currentSelectionDisplay.textContent = `Sum: ${sum}`;
+            if (sum === targetSum) {
+                currentSelectionDisplay.style.color = '#2ecc71';
+            } else if (sum > targetSum) {
+                currentSelectionDisplay.style.color = '#e74c3c';
+            } else {
+                currentSelectionDisplay.style.color = 'white';
+            }
+        }
+
+        function finishSelection() {
+            if (!isSelecting || gameOver) return;
+            isSelecting = false;
+
+            const box = getMySelectionBox();
+            box.style.display = 'none';
+            
+            document.querySelectorAll('.apple.selected').forEach(el => {
+                el.classList.remove('selected');
+            });
+
+            // Emit selection end to server
+            socket.emit('selection-update', { visible: false });
+
+            if (selectedCells.length > 0) {
+                const sum = calculateSum(selectedCells);
+                const valid = sum === targetSum;
+                
+                // Only P1 can score
+                if (playerNumber === 1 && valid) {
+                    score += selectedCells.length;
+                    scoreDisplay.textContent = score;
+                    showFeedback(sum, true, selectedCells.length);
+                    
+                    const removedApples = selectedCells.map(a => ({
+                        row: a.row,
+                        col: a.col,
+                        value: a.value
+                    }));
+                    
+                    removeApples(selectedCells);
+                    
+                    // Emit to server
+                    socket.emit('selection-complete', {
+                        valid: true,
+                        newScore: score,
+                        newBoard: board,
+                        removedApples: removedApples
+                    });
+                } else if (playerNumber === 1) {
+                    showFeedback(sum, false, selectedCells.length);
+                    socket.emit('selection-complete', { valid: false });
+                } else {
+                    // P2 just shows feedback but doesn't score
+                    if (valid) {
+                        showFeedback(sum, false, selectedCells.length);
+                        currentSelectionDisplay.textContent = `Sum: ${sum} ✓ (P1 must select)`;
+                        
+                        // Emit valid selection hint to P1
+                        const myBox = getMySelectionBox();
+                        socket.emit('p2-valid-hint', {
+                            x: parseInt(myBox.style.left),
+                            y: parseInt(myBox.style.top),
+                            width: parseInt(myBox.style.width),
+                            height: parseInt(myBox.style.height),
+                            sum: sum
+                        });
+                    } else {
+                        showFeedback(sum, false, selectedCells.length);
+                    }
+                    socket.emit('selection-complete', { valid: false });
+                }
+            }
+
+            currentSelectionDisplay.style.color = 'white';
+            setTimeout(() => {
+                if (!isSelecting) {
+                    currentSelectionDisplay.classList.remove('show');
+                }
+            }, 1000);
+
+            selectedCells = [];
+        }
+
+        function showOverlay(title, message) {
+            overlayTitle.textContent = title;
+            overlayMessage.innerHTML = message.replace(/\n/g, '<br>');
+            overlay.classList.add('show');
+        }
+
+        function hideOverlay() {
+            overlay.classList.remove('show');
+        }
+
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        }
+
+        function updateTimeDisplay(seconds) {
+            timeRemainingDisplay.textContent = String(seconds);
+        }
+
+        function startTimer() {
+            stopTimer();
+            timeStart = Date.now();
+            updateTimeDisplay(TIME_LIMIT_SECONDS);
+            timerInterval = setInterval(() => {
+                const elapsedSeconds = Math.floor((Date.now() - timeStart) / 1000);
+                const remaining = Math.max(0, TIME_LIMIT_SECONDS - elapsedSeconds);
+                updateTimeDisplay(remaining);
+                if (remaining <= 0) {
+                    handleGameOver('time');
+                }
+            }, 250);
+        }
+
+        function handleVictory() {
+            if (gameOver) return;
+            gameOver = true;
+            stopTimer();
+            
+            const elapsedMs = Date.now() - timeStart;
+            const elapsedSeconds = (elapsedMs / 1000).toFixed(1);
+            
+            if (playerNumber === 1) {
+                gameScores.push(score);
+                socket.emit('game-over', {
+                    score: score,
+                    title: '🎉 Perfect!',
+                    message: `All apples cleared!\nScore: ${score} | Time: ${elapsedSeconds}s`
+                });
+            }
+            
+            showOverlay('🎉 Perfect!', `All apples cleared!\nScore: ${score} | Time: ${elapsedSeconds}s`);
+        }
+
+        function handleGameOver(reason) {
+            if (gameOver) return;
+            gameOver = true;
+            stopTimer();
+            
+            const message = reason === 'time'
+                ? `Time's up! Score: ${score}`
+                : `No more moves! Score: ${score}`;
+            
+            if (playerNumber === 1) {
+                gameScores.push(score);
+                socket.emit('game-over', {
+                    score: score,
+                    title: 'Game Over',
+                    message: message
+                });
+            }
+            
+            showOverlay('Game Over', message);
+        }
+
+        function checkGameState() {
+            const applesLeft = updateApplesLeft();
+            if (applesLeft === 0) {
+                handleVictory();
+                return;
+            }
+            if (!checkForMoves()) {
+                handleGameOver('nomoves');
+            }
+        }
+
+        function updateBgmState() {
+            bgmToggle.textContent = bgmEnabled ? 'Music: On' : 'Music: Off';
+            bgm.volume = volumeSlider.value / 100;
+            if (!bgmEnabled) {
+                bgm.pause();
+                return;
+            }
+            bgm.play().catch(() => {});
+        }
+
+        // ============================================================
+        // EVENT LISTENERS
+        // ============================================================
+
+        // Lobby events
+        createRoomBtn.addEventListener('click', createRoom);
+        showJoinBtn.addEventListener('click', showJoinForm);
+        joinRoomBtn.addEventListener('click', joinRoom);
+        backToLobbyBtn.addEventListener('click', () => {
+            joinForm.classList.add('hidden');
+            lobbyButtons.classList.remove('hidden');
+        });
+        copyCodeBtn.addEventListener('click', copyRoomCode);
+        leaveRoomBtn.addEventListener('click', leaveRoom);
+
+        roomCodeInput.addEventListener('keyup', (e) => {
+            if (e.key === 'Enter') joinRoom();
+        });
+
+        // Home play button
+        homePlayBtn.addEventListener('click', () => {
+            if (playerNumber === 1) {
+                showGameView();
+                startGame();
+            }
+        });
+
+        // Game board events
+        gameBoard.addEventListener('pointerdown', (e) => {
+            if (shouldIgnoreTarget(e.target)) return;
+            if (e.pointerType === 'mouse' && e.button !== 0) return;
+
+            e.preventDefault();
+            activePointerId = e.pointerId;
+            updateBgmState();
+            if (e.target.setPointerCapture) {
+                e.target.setPointerCapture(e.pointerId);
+            }
+            startSelection(e.clientX, e.clientY);
+        }, { passive: false });
+
+        gameBoard.addEventListener('pointermove', (e) => {
+            if (!isSelecting || activePointerId !== e.pointerId) return;
+            e.preventDefault();
+            updateSelection(e.clientX, e.clientY);
+        }, { passive: false });
+
+        gameBoard.addEventListener('pointerup', (e) => {
+            if (activePointerId !== e.pointerId) return;
+            if (e.target.releasePointerCapture) {
+                e.target.releasePointerCapture(e.pointerId);
+            }
+            finishSelection();
+            activePointerId = null;
+        });
+
+        gameBoard.addEventListener('pointercancel', (e) => {
+            if (activePointerId !== e.pointerId) return;
+            finishSelection();
+            activePointerId = null;
+        });
+
+        // Window events
+        window.addEventListener('resize', () => {
+            if (appleElements.length > 0) {
+                updateLayout();
+                requestAnimationFrame(() => {
+                    cacheApplePositions();
+                });
+            }
+        });
+
+        window.addEventListener('scroll', () => {
+            if (appleElements.length > 0) {
+                cacheApplePositions();
+            }
+        });
+
+        // Overlay restart
+        overlayRestart.addEventListener('click', () => {
+            hideOverlay();
+            socket.emit('return-to-lobby');
+            showHomeViewMultiplayer();
+        });
+
+        // Settings
+        bgmToggle.addEventListener('click', () => {
+            bgmEnabled = !bgmEnabled;
+            updateBgmState();
+        });
+
+        volumeSlider.addEventListener('input', () => {
+            bgm.volume = volumeSlider.value / 100;
+        });
+
+        bgm.addEventListener('ended', () => {
+            if (bgmEnabled) {
+                setTimeout(() => {
+                    bgm.currentTime = 0;
+                    bgm.play().catch(() => {});
+                }, 1000);
+            }
+        });
+
+        lightToggle.addEventListener('change', () => {
+            if (lightToggle.checked) {
+                document.body.classList.add('light-colors');
+            } else {
+                document.body.classList.remove('light-colors');
+            }
+        });
+
+        compactToggle.addEventListener('change', () => {
+            setLayout(compactToggle.checked);
+        });
+
+        // ============================================================
+        // INITIALIZATION
+        // ============================================================
+
+        function init() {
+            const prefersCompact = window.matchMedia('(max-width: 600px)').matches;
+            compactToggle.checked = prefersCompact;
+            setLayout(prefersCompact, { restart: false });
+            
+            initSocket();
+            showLobbyView();
+        }
+
+        init();
+    </script>
+</body>
+</html>
+

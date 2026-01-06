@@ -4,62 +4,123 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Fruit Box** is a standalone HTML5 browser game with no dependencies or build process. The entire application exists in a single `fruit_box.html` file containing all HTML, CSS, and JavaScript.
+**Fruit Box** is a real-time two-player multiplayer browser game. Players collaborate to select apples that sum to a target number, with Player 1 scoring and Player 2 providing visual assistance.
 
 ## Architecture
 
-### Single-File Structure
-- **fruit_box.html**: Complete self-contained game
-  - HTML markup (game UI, overlays, screens)
-  - CSS styling (embedded in `<style>` tag)
-  - JavaScript game logic (embedded in `<script>` tag)
+### Project Structure
+```
+FruitBox/
+├── server.js           # Express + Socket.IO backend server
+├── package.json        # Node.js dependencies and scripts
+├── render.yaml         # Render deployment configuration
+├── public/             # Static files served by Express
+│   ├── index.html      # Multiplayer game frontend
+│   ├── 3.mp3           # Background music
+│   └── icon.svg        # App icon
+├── index.html          # Legacy single-player version
+└── tests/              # Playwright test suite
+```
 
-### Game Architecture
-The game uses vanilla JavaScript with the following key components:
+### Backend (server.js)
+- **Express.js** serves static files from `public/`
+- **Socket.IO** handles real-time WebSocket communication
+- **Room Management**: 6-character alphanumeric room codes
+- **Player Roles**: First player = P1 (scorer), Second = P2 (helper)
 
-1. **Board Management**
-   - 10x17 grid stored in 2D array `board[][]`
-   - Values range from 1 to min(9, targetSum-1)
-   - Null values represent removed apples
+### Frontend (public/index.html)
+Single-file frontend containing:
+- HTML markup (lobby, home screen, game board, overlays)
+- CSS styling (player-specific colors: P1=gold, P2=cyan)
+- JavaScript game logic + Socket.IO client
 
-2. **Selection System**
-   - Drag-based rectangular selection using mouse/touch events
-   - Cached apple positions for performance (`appleElements[]`)
-   - Real-time sum calculation during drag
-   - Position caching updated on scroll/resize
+### Real-time Events
+| Event | Direction | Description |
+|-------|-----------|-------------|
+| `create-room` | Client→Server | Create new game room |
+| `join-room` | Client→Server | Join existing room by code |
+| `start-game` | Client→Server | P1 initiates game with config |
+| `selection-update` | Client→Server→Client | Broadcast selection box position |
+| `selection-complete` | Client→Server | P1 submits valid selection |
+| `game-state-update` | Server→Client | Sync score and board changes |
+| `game-over` | Client→Server→Client | End game, show results |
 
-3. **Game Loop**
-   - Timer-based gameplay (120 seconds default)
-   - Score tracking (1 point per apple in valid selection)
-   - Victory condition: Selected apples sum to exactly `targetSum`
-   - End conditions: Timer expires or no valid moves remain
+## Game Flow
 
-4. **Move Validation**
-   - `checkForMoves()`: Brute force checks all possible rectangular selections
-   - Tests combinations of apple pairs to form rectangles
-   - Computationally expensive but functional for 10x17 grid
+```
+[Lobby] → Create/Join Room → [Waiting Room] → P2 Joins → [Home Screen]
+                                                              ↓
+                                         P1 clicks "Start" → [Game Board]
+                                                              ↓
+                                         Timer ends/No moves → [Game Over]
+                                                              ↓
+                                                         [Home Screen]
+```
 
-## Running the Game
+## Player Roles
 
-Open `fruit_box.html` directly in any modern web browser. No server, build step, or installation required.
+| Player | Actions | Scoring |
+|--------|---------|---------|
+| **P1** | Draw selection boxes, start game, configure settings | ✅ Scores points |
+| **P2** | Draw selection boxes (visible to P1 in cyan) | ❌ Cannot score |
+
+Both players see each other's selection boxes in real-time with different colors.
+
+## Running Locally
+
+```bash
+# Install dependencies
+npm install
+
+# Start server
+npm start
+
+# Open in browser
+# http://localhost:3000
+```
+
+## Deploying to Render
+
+1. Push to GitHub
+2. Connect repository to Render
+3. Render auto-detects `render.yaml` Blueprint
+4. Deploy as Web Service
+
+Or manually:
+- **Build Command**: `npm install`
+- **Start Command**: `npm start`
+- **Environment**: Node.js
 
 ## Key Technical Details
 
-- **No dependencies**: Pure vanilla JavaScript, no frameworks or libraries
-- **Offline-capable**: Fully functional without internet connection
-- **Responsive**: Touch and mouse event handling for desktop and mobile
-- **Performance optimization**: Apple positions cached and updated only on scroll/resize/drag start
+- **Dependencies**: Express 4.18, Socket.IO 4.7
+- **Port**: Uses `PORT` env var (default 3000)
+- **No database**: All state is in-memory (rooms cleared on restart)
+- **Offline audio**: Background music bundled locally
 
 ## Common Modifications
 
-When modifying the game:
+### Server (server.js)
+- **Room expiration**: Add timeout to clean up inactive rooms
+- **Persistent scores**: Integrate database (Redis, MongoDB)
+- **More players**: Extend room player array and role logic
 
-- **Grid size**: Change `ROWS` and `COLS` constants (line 363-364)
-- **Game duration**: Modify `GAME_DURATION` constant (line 365)
-- **Apple value range**: Adjust logic in `generateBoard()` (line 454-467)
-- **Target sum limits**: Update min/max in input element (line 347) and validation (line 441-444)
-- **Styling**: All CSS in `<style>` block (line 7-313)
+### Frontend (public/index.html)
+- **Grid size**: Modify `DEFAULT_LAYOUT` and `COMPACT_LAYOUT` objects
+- **Game duration**: Change `TIME_LIMIT_SECONDS` default value
+- **Selection colors**: Update CSS variables `--p1-color` and `--p2-color`
+- **Add chat**: Emit/listen for chat events via Socket.IO
 
 ## Testing
 
-Manual testing in browser only. No automated test suite exists.
+```bash
+# Run Playwright tests (single-player legacy)
+npm test
+
+# Run with UI
+npm run test:ui
+```
+
+## Legacy Single-Player
+
+The original single-player game is preserved at `index.html` (root level). The multiplayer version is in `public/index.html`.
