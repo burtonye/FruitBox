@@ -31,11 +31,12 @@ test.describe('Multiplayer Basics', () => {
     await expect(page.locator('#waiting-room')).toBeVisible();
     await expect(page.locator('#room-code-display')).not.toHaveText('------');
     
-    // Should show P1 slot as filled
-    await expect(page.locator('#p1-slot')).not.toHaveClass(/empty/);
+    // Should show player list with P1 active
+    await expect(page.locator('.player-slot.p1')).toBeVisible();
+    await expect(page.locator('.player-slot.p1')).not.toHaveClass(/empty/);
     
-    // P2 slot should be waiting
-    await expect(page.locator('#p2-slot')).toHaveClass(/empty/);
+    // Play Solo button should be visible for P1
+    await expect(page.locator('#play-solo-btn')).toBeVisible();
   });
 
   test('should show join form when clicking join button', async ({ page }) => {
@@ -81,13 +82,20 @@ test.describe('Multiplayer Basics', () => {
       await page2.fill('#room-code-input', roomCode);
       await page2.click('#join-room-btn');
 
-      // Both should see home view after P2 joins
+      // P2 should be in waiting room
+      await page2.waitForSelector('#waiting-room:not(.hidden)', { timeout: 5000 });
+      
+      // Both should see updated player count
+      await page1.waitForTimeout(500);
+      const p1PlayerSlots = await page1.locator('.player-slot:not(.empty)').count();
+      expect(p1PlayerSlots).toBe(2);
+      
+      // P1 clicks play solo to proceed to home view
+      await page1.click('#play-solo-btn');
       await page1.waitForSelector('#home-view:not(.hidden)', { timeout: 5000 });
-      await page2.waitForSelector('#home-view:not(.hidden)', { timeout: 5000 });
-
-      // P1 should have play button enabled, P2 should have it disabled
+      
+      // P1 should have play button enabled
       await expect(page1.locator('#home-play-btn')).toBeEnabled();
-      await expect(page2.locator('#home-play-btn')).toBeDisabled();
     } finally {
       await context1.close();
       await context2.close();
@@ -105,6 +113,7 @@ test.describe('Multiplayer Basics', () => {
       await page1.goto('/');
       await page1.waitForSelector('.connection-status.connected', { timeout: 5000 });
       await page1.click('#create-room-btn');
+      await page1.waitForSelector('#room-code-display');
       const roomCode = await page1.locator('#room-code-display').textContent();
 
       // Player 2 joins
@@ -113,16 +122,19 @@ test.describe('Multiplayer Basics', () => {
       await page2.click('#show-join-btn');
       await page2.fill('#room-code-input', roomCode);
       await page2.click('#join-room-btn');
+      await page2.waitForSelector('#waiting-room:not(.hidden)', { timeout: 5000 });
 
-      // Wait for home views
+      // P1 proceeds to home view
+      await page1.click('#play-solo-btn');
       await page1.waitForSelector('#home-view:not(.hidden)', { timeout: 5000 });
-      await page2.waitForSelector('#home-view:not(.hidden)', { timeout: 5000 });
 
       // P1 starts game
       await page1.click('#home-play-btn');
 
-      // Both should see game board
+      // P1 should see game board
       await page1.waitForSelector('#game-board-view:not(.hidden)', { timeout: 5000 });
+      
+      // P2 should also see game board (synced via socket)
       await page2.waitForSelector('#game-board-view:not(.hidden)', { timeout: 5000 });
 
       // Both should see apples
@@ -156,11 +168,11 @@ test.describe('Multiplayer Basics', () => {
       await page2.click('#show-join-btn');
       await page2.fill('#room-code-input', roomCode);
       await page2.click('#join-room-btn');
+      await page2.waitForSelector('#waiting-room:not(.hidden)', { timeout: 5000 });
 
-      // Wait longer for home view transition after P2 joins
+      // P1 proceeds and starts game
+      await page1.click('#play-solo-btn');
       await page1.waitForSelector('#home-view:not(.hidden)', { timeout: 10000 });
-      await page2.waitForSelector('#home-view:not(.hidden)', { timeout: 10000 });
-
       await page1.click('#home-play-btn');
 
       await page1.waitForSelector('#game-board-view:not(.hidden)', { timeout: 5000 });
@@ -177,20 +189,21 @@ test.describe('Multiplayer Basics', () => {
       await page1.mouse.down();
       await page1.mouse.move(boardBox.x + 150, boardBox.y + 150);
 
-      // P1's selection box should be visible on P1's screen
-      await expect(page1.locator('#selection-box-p1')).toHaveCSS('display', 'block');
+      // P1's selection box should be visible on P1's screen (dynamically created)
+      const p1Box = page1.locator('.selection-box.p1');
+      await expect(p1Box).toHaveCSS('display', 'block');
 
-      // P2 should see P1's selection box (as the remote P1 box)
-      // Note: P2 sees P1's box, which comes through as selection-box-p1 on their screen
+      // P2 should see P1's selection box
       await page2.waitForTimeout(300); // Allow sync time
-      await expect(page2.locator('#selection-box-p1')).toHaveCSS('display', 'block');
+      const p2SeesP1Box = page2.locator('.selection-box.p1');
+      await expect(p2SeesP1Box).toHaveCSS('display', 'block');
 
       // Release
       await page1.mouse.up();
 
       // Boxes should be hidden after release
       await page1.waitForTimeout(200);
-      await expect(page1.locator('#selection-box-p1')).toHaveCSS('display', 'none');
+      await expect(p1Box).toHaveCSS('display', 'none');
     } finally {
       await context1.close();
       await context2.close();
@@ -216,25 +229,39 @@ test.describe('Multiplayer Basics', () => {
       await page2.click('#show-join-btn');
       await page2.fill('#room-code-input', roomCode);
       await page2.click('#join-room-btn');
+      await page2.waitForSelector('#waiting-room:not(.hidden)', { timeout: 5000 });
+      
+      // Wait for P1 to see P2 joined (2 players in room)
+      await page1.waitForTimeout(500);
+      const activeSlots = await page1.locator('.player-slot:not(.empty)').count();
+      expect(activeSlots).toBe(2);
 
+      // P1 proceeds and starts game
+      await page1.click('#play-solo-btn');
       await page1.waitForSelector('#home-view:not(.hidden)', { timeout: 10000 });
-      await page2.waitForSelector('#home-view:not(.hidden)', { timeout: 10000 });
       await page1.click('#home-play-btn');
       
+      // Wait for P1's game board
       await page1.waitForSelector('#game-board-view:not(.hidden)', { timeout: 5000 });
-      await page2.waitForSelector('#game-board-view:not(.hidden)', { timeout: 5000 });
+      await page1.waitForSelector('.game-board .apple', { timeout: 5000 });
+      
+      // For P2, the game-started event should transition them from waiting room to game view
+      // Increase timeout for this transition
+      await page2.waitForSelector('.game-board .apple', { timeout: 15000 });
       await page2.waitForTimeout(500);
 
       // P2 makes a selection (may or may not be valid sum=10)
       const gameBoard2 = page2.locator('.game-board');
+      await expect(gameBoard2).toBeVisible();
       const boardBox2 = await gameBoard2.boundingBox();
       
       await page2.mouse.move(boardBox2.x + 50, boardBox2.y + 50);
       await page2.mouse.down();
       await page2.mouse.move(boardBox2.x + 200, boardBox2.y + 200);
       
-      // P2's selection box should be visible
-      await expect(page2.locator('#selection-box-p2')).toHaveCSS('display', 'block');
+      // P2's selection box should be visible (dynamically created)
+      const p2Box = page2.locator('.selection-box.p2');
+      await expect(p2Box).toHaveCSS('display', 'block');
       
       await page2.mouse.up();
 
@@ -269,9 +296,11 @@ test.describe('Multiplayer Basics', () => {
       await page2.click('#show-join-btn');
       await page2.fill('#room-code-input', roomCode);
       await page2.click('#join-room-btn');
+      await page2.waitForSelector('#waiting-room:not(.hidden)', { timeout: 5000 });
 
+      // P1 proceeds and starts game
+      await page1.click('#play-solo-btn');
       await page1.waitForSelector('#home-view:not(.hidden)', { timeout: 10000 });
-      await page2.waitForSelector('#home-view:not(.hidden)', { timeout: 10000 });
       await page1.click('#home-play-btn');
       
       await page1.waitForSelector('#game-board-view:not(.hidden)', { timeout: 5000 });
@@ -307,6 +336,113 @@ test.describe('Multiplayer Basics', () => {
     } finally {
       await context1.close();
       await context2.close();
+    }
+  });
+
+  test('P1 can play solo without waiting for other players', async ({ page }) => {
+    await page.goto('/');
+    
+    // Wait for connection
+    await page.waitForSelector('.connection-status.connected', { timeout: 5000 });
+    
+    // Click create room
+    await page.click('#create-room-btn');
+    await page.waitForSelector('#waiting-room:not(.hidden)', { timeout: 5000 });
+    
+    // Should see Play Solo button
+    await expect(page.locator('#play-solo-btn')).toBeVisible();
+    
+    // Click Play Solo
+    await page.click('#play-solo-btn');
+    
+    // Should see home view
+    await page.waitForSelector('#home-view:not(.hidden)', { timeout: 5000 });
+    
+    // Start game
+    await page.click('#home-play-btn');
+    
+    // Should see game board
+    await page.waitForSelector('#game-board-view:not(.hidden)', { timeout: 5000 });
+    await page.waitForSelector('.game-board .apple', { timeout: 5000 });
+    
+    // Should have apples
+    const apples = await page.locator('.apple').count();
+    expect(apples).toBeGreaterThan(0);
+  });
+
+  test('Three players can join and play together', async ({ browser }) => {
+    const context1 = await browser.newContext();
+    const context2 = await browser.newContext();
+    const context3 = await browser.newContext();
+    const page1 = await context1.newPage();
+    const page2 = await context2.newPage();
+    const page3 = await context3.newPage();
+
+    try {
+      // Player 1 creates room
+      await page1.goto('/');
+      await page1.waitForSelector('.connection-status.connected', { timeout: 5000 });
+      await page1.click('#create-room-btn');
+      await page1.waitForSelector('#room-code-display');
+      const roomCode = await page1.locator('#room-code-display').textContent();
+
+      // Player 2 joins
+      await page2.goto('/');
+      await page2.waitForSelector('.connection-status.connected', { timeout: 5000 });
+      await page2.click('#show-join-btn');
+      await page2.fill('#room-code-input', roomCode);
+      await page2.click('#join-room-btn');
+      await page2.waitForSelector('#waiting-room:not(.hidden)', { timeout: 5000 });
+
+      // Player 3 joins
+      await page3.goto('/');
+      await page3.waitForSelector('.connection-status.connected', { timeout: 5000 });
+      await page3.click('#show-join-btn');
+      await page3.fill('#room-code-input', roomCode);
+      await page3.click('#join-room-btn');
+      await page3.waitForSelector('#waiting-room:not(.hidden)', { timeout: 5000 });
+
+      // Wait for P1 to see all players
+      await page1.waitForTimeout(500);
+      const activeSlots = await page1.locator('.player-slot:not(.empty)').count();
+      expect(activeSlots).toBe(3);
+
+      // P1 starts game
+      await page1.click('#play-solo-btn');
+      await page1.waitForSelector('#home-view:not(.hidden)', { timeout: 10000 });
+      await page1.click('#home-play-btn');
+
+      // All should see game board
+      await page1.waitForSelector('.game-board .apple', { timeout: 5000 });
+      await page2.waitForSelector('.game-board .apple', { timeout: 15000 });
+      await page3.waitForSelector('.game-board .apple', { timeout: 15000 });
+
+      // All should see same number of apples
+      const p1Apples = await page1.locator('.apple').count();
+      const p2Apples = await page2.locator('.apple').count();
+      const p3Apples = await page3.locator('.apple').count();
+      expect(p1Apples).toBeGreaterThan(0);
+      expect(p1Apples).toBe(p2Apples);
+      expect(p1Apples).toBe(p3Apples);
+
+      // P3 makes a selection - P1 should see P3's selection box
+      const gameBoard3 = page3.locator('.game-board');
+      const boardBox3 = await gameBoard3.boundingBox();
+      
+      await page3.mouse.move(boardBox3.x + 50, boardBox3.y + 50);
+      await page3.mouse.down();
+      await page3.mouse.move(boardBox3.x + 150, boardBox3.y + 150);
+
+      // P1 should see P3's selection box
+      await page1.waitForTimeout(300);
+      const p3BoxOnP1 = page1.locator('.selection-box.p3');
+      await expect(p3BoxOnP1).toHaveCSS('display', 'block');
+
+      await page3.mouse.up();
+    } finally {
+      await context1.close();
+      await context2.close();
+      await context3.close();
     }
   });
 });

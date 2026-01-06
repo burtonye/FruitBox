@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Fruit Box** is a real-time two-player multiplayer browser game. Players collaborate to select apples that sum to a target number, with Player 1 scoring and Player 2 providing visual assistance.
+**Fruit Box** is a real-time multiplayer browser game supporting 1-8 players. Players collaborate to select apples that sum to a target number, with Player 1 (the scorer) being the only one who can score points, while Players 2-8 act as helpers who can highlight valid selections.
 
 ## Architecture
 
@@ -26,7 +26,8 @@ FruitBox/
 - **Express.js** serves static files from `public/`
 - **Socket.IO** handles real-time WebSocket communication
 - **Room Management**: 6-character alphanumeric room codes
-- **Player Roles**: First player = P1 (scorer), Second = P2 (helper)
+- **Player Capacity**: Up to 8 players per room
+- **Player Roles**: P1 = scorer, P2-P8 = helpers
 
 ### Frontend (public/index.html)
 Single-file frontend containing:
@@ -44,27 +45,43 @@ Single-file frontend containing:
 | `selection-complete` | Client→Server | P1 submits valid selection |
 | `game-state-update` | Server→Client | Sync score and board changes |
 | `game-over` | Client→Server→Client | End game, show results |
+| `player-joined` | Server→Client | Notify all when player joins |
+| `player-left` | Server→Client | Notify all when player leaves |
+| `helper-valid-hint` | Client→Server | Helper found valid selection |
+| `show-hint` | Server→Client | Display hint box on P1's screen |
 
 ## Game Flow
 
 ```
-[Lobby] → Create/Join Room → [Waiting Room] → P2 Joins → [Home Screen]
-                                                              ↓
-                                         P1 clicks "Start" → [Game Board]
-                                                              ↓
-                                         Timer ends/No moves → [Game Over]
-                                                              ↓
-                                                         [Home Screen]
+[Lobby] → Create Room → [Waiting Room] → Play Solo/Wait for players → [Home Screen]
+                                                                            ↓
+                                                    P1 clicks "Start" → [Game Board]
+                                                                            ↓
+                                                    Timer ends/No moves → [Game Over]
+                                                                            ↓
+                                                                       [Home Screen]
 ```
+
+**Solo Mode**: P1 can click "Play Solo" to start without waiting for other players.
+
+**Multiplayer**: Up to 8 players can join a room. Additional players can join mid-game.
 
 ## Player Roles
 
-| Player | Actions | Scoring |
-|--------|---------|---------|
-| **P1** | Draw selection boxes, start game, configure settings | ✅ Scores points |
-| **P2** | Draw selection boxes (visible to P1 in cyan) | ❌ Cannot score |
+| Player | Color | Actions | Scoring |
+|--------|-------|---------|---------|
+| **P1** | 🟡 Gold | Draw selection boxes, start game, configure settings | ✅ Scores points |
+| **P2** | 🔵 Cyan | Draw selection boxes, send hints to P1 | ❌ Cannot score |
+| **P3** | 🩷 Pink | Draw selection boxes, send hints to P1 | ❌ Cannot score |
+| **P4** | 🟣 Purple | Draw selection boxes, send hints to P1 | ❌ Cannot score |
+| **P5** | 🟠 Orange | Draw selection boxes, send hints to P1 | ❌ Cannot score |
+| **P6** | 🟢 Green | Draw selection boxes, send hints to P1 | ❌ Cannot score |
+| **P7** | 🔴 Red | Draw selection boxes, send hints to P1 | ❌ Cannot score |
+| **P8** | 🔷 Blue | Draw selection boxes, send hints to P1 | ❌ Cannot score |
 
-Both players see each other's selection boxes in real-time with different colors.
+All players see each other's selection boxes in real-time with unique colors.
+
+When a helper (P2-P8) finds a valid selection, a green hint box appears on P1's screen.
 
 ## Running Locally
 

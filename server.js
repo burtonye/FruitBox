@@ -1,16 +1,19 @@
 /**
  * Fruit Box Multiplayer Server
  * 
- * Real-time two-player game server using Express + Socket.IO
+ * Real-time multiplayer game server using Express + Socket.IO
  * - Player 1: Main player who scores by selecting apples summing to target
- * - Player 2: Helper who can draw boxes (visible to P1) but cannot score
+ * - Players 2-8: Helpers who can draw boxes (visible to P1) but cannot score
  * 
  * Room Management:
  * - Rooms are identified by 6-character alphanumeric codes
- * - First player to join becomes Player 1
- * - Second player becomes Player 2
- * - Rooms are cleaned up when both players leave
+ * - First player to join becomes Player 1 (host/scorer)
+ * - Additional players (up to 8 total) become helpers
+ * - Rooms are cleaned up when all players leave
+ * - P1 can start solo or with any number of players
  */
+
+const MAX_PLAYERS = 8;
 
 const express = require('express');
 const http = require('http');
@@ -101,21 +104,28 @@ io.on('connection', (socket) => {
 
         const room = rooms.get(code);
         
-        if (room.players.length >= 2) {
-            callback({ success: false, error: 'Room is full' });
+        if (room.players.length >= MAX_PLAYERS) {
+            callback({ success: false, error: 'Room is full (max 8 players)' });
             return;
         }
 
         room.players.push(socket);
         room.playerIds.push(socket.id);
         currentRoom = code;
-        playerNumber = 2;
+        playerNumber = room.players.length; // Assign next player number
         socket.join(code);
 
-        console.log(`[${new Date().toISOString()}] Player ${socket.id} joined room: ${code}`);
+        console.log(`[${new Date().toISOString()}] Player ${socket.id} joined room: ${code} as P${playerNumber}`);
 
-        // Notify P1 that P2 has joined
-        socket.to(code).emit('player-joined', { playerNumber: 2 });
+        // Notify all players that someone joined
+        io.to(code).emit('player-joined', { 
+            playerNumber: playerNumber,
+            totalPlayers: room.players.length,
+            playerList: room.playerIds.map((id, idx) => ({ 
+                playerNumber: idx + 1, 
+                isHost: idx === 0 
+            }))
+        });
 
         // Send current game state if game is in progress
         if (room.gameState) {
@@ -125,7 +135,8 @@ io.on('connection', (socket) => {
         callback({
             success: true,
             roomCode: code,
-            playerNumber: 2,
+            playerNumber: playerNumber,
+            totalPlayers: room.players.length,
             gameStarted: room.gameStarted,
             gameState: room.gameState
         });
@@ -195,23 +206,24 @@ io.on('connection', (socket) => {
         });
     });
 
-    // P2 found a valid selection - notify P1
-    socket.on('p2-valid-hint', (hintData) => {
-        if (!currentRoom || playerNumber !== 2) return;
+    // Helper found a valid selection - notify P1
+    socket.on('helper-valid-hint', (hintData) => {
+        if (!currentRoom || playerNumber === 1) return; // Only helpers can send hints
         
         const room = rooms.get(currentRoom);
         if (!room) return;
 
-        // Send hint to P1 only
+        // Send hint to all players (P1 will display it)
         socket.to(currentRoom).emit('show-hint', {
             x: hintData.x,
             y: hintData.y,
             width: hintData.width,
             height: hintData.height,
-            sum: hintData.sum
+            sum: hintData.sum,
+            fromPlayer: playerNumber
         });
         
-        console.log(`[${new Date().toISOString()}] P2 hint sent in room: ${currentRoom}`);
+        console.log(`[${new Date().toISOString()}] P${playerNumber} hint sent in room: ${currentRoom}`);
     });
 
     // Game over
@@ -256,10 +268,14 @@ io.on('connection', (socket) => {
                     room.playerIds.splice(playerIndex, 1);
                 }
 
-                // Notify remaining player
-                socket.to(currentRoom).emit('player-left', { 
+                // Notify remaining players with updated player list
+                io.to(currentRoom).emit('player-left', { 
                     playerNumber: playerNumber,
-                    remaining: room.players.length
+                    totalPlayers: room.players.length,
+                    playerList: room.playerIds.map((id, idx) => ({ 
+                        playerNumber: idx + 1, 
+                        isHost: idx === 0 
+                    }))
                 });
 
                 // If room is empty, delete it
@@ -267,9 +283,10 @@ io.on('connection', (socket) => {
                     rooms.delete(currentRoom);
                     console.log(`[${new Date().toISOString()}] Room deleted: ${currentRoom}`);
                 } else if (playerNumber === 1 && room.players.length > 0) {
-                    // If P1 left, promote P2 to P1
+                    // If P1 left, promote next player to P1/host
                     room.hostSocketId = room.playerIds[0];
-                    io.to(room.playerIds[0]).emit('promoted-to-host');
+                    io.to(room.playerIds[0]).emit('promoted-to-host', { newPlayerNumber: 1 });
+                    console.log(`[${new Date().toISOString()}] Promoted ${room.playerIds[0]} to host in ${currentRoom}`);
                 }
             }
         }

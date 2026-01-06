@@ -17,6 +17,12 @@
             --cell-size: 50px;
             --p1-color: #FFD700;
             --p2-color: #00CED1;
+            --p3-color: #FF6B9D;
+            --p4-color: #9D6BFF;
+            --p5-color: #FF9D6B;
+            --p6-color: #6BFF9D;
+            --p7-color: #FF6B6B;
+            --p8-color: #6B9DFF;
         }
 
         body {
@@ -269,7 +275,37 @@
             background: rgba(0, 206, 209, 0.2);
         }
 
-        /* Hint box - shows P2's valid selections to P1 */
+        .selection-box.p3 {
+            border: 3px dashed var(--p3-color);
+            background: rgba(255, 107, 157, 0.2);
+        }
+
+        .selection-box.p4 {
+            border: 3px dashed var(--p4-color);
+            background: rgba(157, 107, 255, 0.2);
+        }
+
+        .selection-box.p5 {
+            border: 3px dashed var(--p5-color);
+            background: rgba(255, 157, 107, 0.2);
+        }
+
+        .selection-box.p6 {
+            border: 3px dashed var(--p6-color);
+            background: rgba(107, 255, 157, 0.2);
+        }
+
+        .selection-box.p7 {
+            border: 3px dashed var(--p7-color);
+            background: rgba(255, 107, 107, 0.2);
+        }
+
+        .selection-box.p8 {
+            border: 3px dashed var(--p8-color);
+            background: rgba(107, 157, 255, 0.2);
+        }
+
+        /* Hint box - shows helper's valid selections to P1 */
         .hint-box {
             position: fixed;
             pointer-events: none;
@@ -284,7 +320,7 @@
         }
 
         .hint-box::before {
-            content: '👆 P2 found this!';
+            content: '👆 Found by helper!';
             position: absolute;
             top: -30px;
             left: 50%;
@@ -298,6 +334,14 @@
             white-space: nowrap;
             box-shadow: 0 2px 8px rgba(0,0,0,0.3);
         }
+        
+        .hint-box[data-from-player="2"]::before { content: '👆 P2 found this!'; }
+        .hint-box[data-from-player="3"]::before { content: '👆 P3 found this!'; }
+        .hint-box[data-from-player="4"]::before { content: '👆 P4 found this!'; }
+        .hint-box[data-from-player="5"]::before { content: '👆 P5 found this!'; }
+        .hint-box[data-from-player="6"]::before { content: '👆 P6 found this!'; }
+        .hint-box[data-from-player="7"]::before { content: '👆 P7 found this!'; }
+        .hint-box[data-from-player="8"]::before { content: '👆 P8 found this!'; }
 
         @keyframes hint-pulse {
             0%, 100% {
@@ -636,45 +680,70 @@
         .player-list {
             display: flex;
             justify-content: center;
-            gap: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
             margin: 20px 0;
+            max-width: 400px;
         }
 
         .player-slot {
-            width: 120px;
-            height: 120px;
+            width: 80px;
+            height: 80px;
             border-radius: 50%;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             font-weight: bold;
+            font-size: 12px;
         }
 
-        .player-slot.p1 {
-            background: var(--p1-color);
-            color: #333;
-        }
-
-        .player-slot.p2 {
-            background: var(--p2-color);
-            color: #333;
-        }
+        .player-slot.p1 { background: var(--p1-color); color: #333; }
+        .player-slot.p2 { background: var(--p2-color); color: #333; }
+        .player-slot.p3 { background: var(--p3-color); color: #333; }
+        .player-slot.p4 { background: var(--p4-color); color: #333; }
+        .player-slot.p5 { background: var(--p5-color); color: #333; }
+        .player-slot.p6 { background: var(--p6-color); color: #333; }
+        .player-slot.p7 { background: var(--p7-color); color: #333; }
+        .player-slot.p8 { background: var(--p8-color); color: #333; }
 
         .player-slot.empty {
             background: rgba(255,255,255,0.2);
-            border: 3px dashed rgba(255,255,255,0.4);
+            border: 2px dashed rgba(255,255,255,0.4);
             color: rgba(255,255,255,0.5);
         }
 
         .player-slot .player-label {
-            font-size: 14px;
-            opacity: 0.7;
+            font-size: 11px;
+            opacity: 0.8;
         }
 
         .player-slot .player-role {
-            font-size: 18px;
-            margin-top: 5px;
+            font-size: 14px;
+            margin-top: 2px;
+        }
+
+        .waiting-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .play-solo-btn {
+            background: #4CAF50;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .play-solo-btn:hover {
+            background: #45a049;
+        }
+
+        .player-count-info {
+            font-size: 12px;
+            color: rgba(255,255,255,0.6);
+            margin-top: 10px;
         }
 
         .copy-btn {
@@ -1080,23 +1149,20 @@
 
             <!-- Waiting room (shown after creating/joining) -->
             <div class="waiting-room hidden" id="waiting-room">
-                <p class="waiting-message">Share this code with Player 2:</p>
+                <p class="waiting-message">Share this code with friends:</p>
                 <div class="room-code-display" id="room-code-display">------</div>
                 <button class="copy-btn" id="copy-code-btn">📋 Copy Code</button>
                 
-                <div class="player-list">
-                    <div class="player-slot p1" id="p1-slot">
-                        <span class="player-label">Player 1</span>
-                        <span class="player-role">🍎 Scorer</span>
-                    </div>
-                    <div class="player-slot p2 empty" id="p2-slot">
-                        <span class="player-label">Player 2</span>
-                        <span class="player-role">Waiting...</span>
-                    </div>
+                <div class="player-list" id="player-list">
+                    <!-- Players will be dynamically added here -->
                 </div>
 
-                <p class="waiting-message" id="waiting-status">Waiting for Player 2 to join...</p>
-                <button id="leave-room-btn">Leave Room</button>
+                <p class="waiting-message" id="waiting-status">Waiting for players to join...</p>
+                <div class="waiting-buttons">
+                    <button class="play-solo-btn" id="play-solo-btn">▶ Play Solo</button>
+                    <button id="leave-room-btn">Leave Room</button>
+                </div>
+                <p class="player-count-info" id="player-count-info">Up to 8 players can join!</p>
             </div>
         </div>
 
@@ -1141,11 +1207,9 @@
         </div>
     </div>
 
-    <!-- Selection boxes - one for each player -->
-    <div class="selection-box p1" id="selection-box-p1"></div>
-    <div class="selection-box p2" id="selection-box-p2"></div>
+    <!-- Selection boxes are created dynamically for each player -->
     
-    <!-- Hint box - shows P2's valid selections to P1 -->
+    <!-- Hint box - shows helper's valid selections to P1 -->
     <div class="hint-box" id="hint-box"></div>
 
     <div class="current-selection" id="current-selection">Sum: 0</div>
@@ -1220,8 +1284,7 @@
         const backToLobbyBtn = document.getElementById('back-to-lobby-btn');
         const roomCodeDisplay = document.getElementById('room-code-display');
         const copyCodeBtn = document.getElementById('copy-code-btn');
-        const p1Slot = document.getElementById('p1-slot');
-        const p2Slot = document.getElementById('p2-slot');
+        // Player slots are now created dynamically in updatePlayerListUI()
         const waitingStatus = document.getElementById('waiting-status');
         const leaveRoomBtn = document.getElementById('leave-room-btn');
 
@@ -1234,10 +1297,14 @@
         const gameBoard = document.getElementById('game-board');
         const gameContainer = document.getElementById('game-container');
         const gameAreaContainer = document.getElementById('game-area-container');
-        const selectionBoxP1 = document.getElementById('selection-box-p1');
-        const selectionBoxP2 = document.getElementById('selection-box-p2');
+        const selectionBoxContainer = document.body; // Selection boxes are appended to body
+        const selectionBoxes = {}; // Map of playerNumber -> selection box element
         const hintBox = document.getElementById('hint-box');
         let hintTimeout = null;
+        let totalPlayers = 1; // Track total players in room
+        const playerList = document.getElementById('player-list');
+        const playSoloBtn = document.getElementById('play-solo-btn');
+        const playerCountInfo = document.getElementById('player-count-info');
         const scoreDisplay = document.getElementById('score');
         const targetDisplayGame = document.getElementById('target-display');
         const applesLeftDisplay = document.getElementById('apples-left');
@@ -1258,13 +1325,67 @@
         const rootStyle = document.documentElement.style;
         const layoutDisplay = document.getElementById('layout-display');
 
-        // Get my selection box based on player number
-        function getMySelectionBox() {
-            return playerNumber === 1 ? selectionBoxP1 : selectionBoxP2;
+        // Player colors for selection boxes
+        const playerColors = {
+            1: { border: '#FFD700', bg: 'rgba(255, 215, 0, 0.2)' },
+            2: { border: '#00CED1', bg: 'rgba(0, 206, 209, 0.2)' },
+            3: { border: '#FF6B9D', bg: 'rgba(255, 107, 157, 0.2)' },
+            4: { border: '#9D6BFF', bg: 'rgba(157, 107, 255, 0.2)' },
+            5: { border: '#FF9D6B', bg: 'rgba(255, 157, 107, 0.2)' },
+            6: { border: '#6BFF9D', bg: 'rgba(107, 255, 157, 0.2)' },
+            7: { border: '#FF6B6B', bg: 'rgba(255, 107, 107, 0.2)' },
+            8: { border: '#6B9DFF', bg: 'rgba(107, 157, 255, 0.2)' }
+        };
+
+        // Create or get selection box for a player
+        function getOrCreateSelectionBox(pNum) {
+            if (!selectionBoxes[pNum]) {
+                const box = document.createElement('div');
+                box.className = `selection-box p${pNum}`;
+                box.id = `selection-box-p${pNum}`;
+                box.style.position = 'fixed';
+                box.style.pointerEvents = 'none';
+                box.style.zIndex = '1000';
+                box.style.borderRadius = '5px';
+                box.style.display = 'none';
+                const colors = playerColors[pNum] || playerColors[2];
+                box.style.border = `3px dashed ${colors.border}`;
+                box.style.background = colors.bg;
+                document.body.appendChild(box);
+                selectionBoxes[pNum] = box;
+            }
+            return selectionBoxes[pNum];
         }
 
-        function getRemoteSelectionBox() {
-            return playerNumber === 1 ? selectionBoxP2 : selectionBoxP1;
+        // Get my selection box based on player number
+        function getMySelectionBox() {
+            return getOrCreateSelectionBox(playerNumber);
+        }
+
+        // Get or create selection box for remote player
+        function getRemoteSelectionBox(remotePlayerNum) {
+            return getOrCreateSelectionBox(remotePlayerNum);
+        }
+
+        // Update player list UI in waiting room
+        function updatePlayerListUI(players) {
+            if (!playerList) return;
+            
+            playerList.innerHTML = '';
+            for (let i = 1; i <= 8; i++) {
+                const slot = document.createElement('div');
+                const isActive = i <= players;
+                slot.className = `player-slot p${i} ${isActive ? '' : 'empty'}`;
+                slot.innerHTML = `
+                    <span class="player-label">P${i}</span>
+                    <span class="player-role">${isActive ? (i === 1 ? '🍎' : '👀') : '...'}</span>
+                `;
+                playerList.appendChild(slot);
+            }
+            
+            if (playerCountInfo) {
+                playerCountInfo.textContent = `${players}/8 players`;
+            }
         }
 
         // ============================================================
@@ -1290,19 +1411,16 @@
 
             // Room events
             socket.on('player-joined', (data) => {
-                console.log('Player 2 joined!');
-                p2Slot.classList.remove('empty');
-                p2Slot.querySelector('.player-role').textContent = '🍏 Helper';
-                waitingStatus.textContent = 'Player 2 has joined! Ready to play.';
-                
-                // Show home view after both players are in
-                setTimeout(() => {
-                    showHomeViewMultiplayer();
-                }, 1000);
+                console.log(`Player ${data.playerNumber} joined! Total: ${data.totalPlayers}`);
+                totalPlayers = data.totalPlayers;
+                updatePlayerListUI(totalPlayers);
+                waitingStatus.textContent = `${totalPlayers} player${totalPlayers > 1 ? 's' : ''} in room`;
             });
 
             socket.on('player-left', (data) => {
                 console.log('Player left:', data);
+                totalPlayers = data.totalPlayers;
+                updatePlayerListUI(totalPlayers);
                 showError(`Player ${data.playerNumber} has left the room`);
                 
                 if (data.remaining === 0) {
@@ -1370,25 +1488,26 @@
             // Remote selection events
             socket.on('remote-selection', (data) => {
                 if (data.playerNumber !== playerNumber) {
-                    updateRemoteSelectionBox(data);
+                    updateRemoteSelectionBox(data.playerNumber, data);
                     
                     // Show indicator
                     remotePlayerIndicator.textContent = `P${data.playerNumber} is selecting...`;
+                    remotePlayerIndicator.style.background = playerColors[data.playerNumber]?.border || '#00CED1';
                     remotePlayerIndicator.classList.add('show');
                 }
             });
 
             socket.on('remote-selection-end', (data) => {
                 if (data.playerNumber !== playerNumber) {
-                    hideRemoteSelectionBox();
+                    hideRemoteSelectionBox(data.playerNumber);
                     remotePlayerIndicator.classList.remove('show');
                 }
             });
 
-            // P2 found a valid selection - show hint to P1
+            // Helper found a valid selection - show hint to P1
             socket.on('show-hint', (hintData) => {
                 if (playerNumber === 1) {
-                    showHintBox(hintData.x, hintData.y, hintData.width, hintData.height);
+                    showHintBox(hintData.x, hintData.y, hintData.width, hintData.height, hintData.fromPlayer);
                     console.log('P2 found valid selection:', hintData);
                 }
             });
@@ -1406,8 +1525,8 @@
             });
         }
 
-        function updateRemoteSelectionBox(data) {
-            const box = getRemoteSelectionBox();
+        function updateRemoteSelectionBox(remotePlayerNum, data) {
+            const box = getRemoteSelectionBox(remotePlayerNum);
             if (data.visible) {
                 box.style.left = `${data.x}px`;
                 box.style.top = `${data.y}px`;
@@ -1419,13 +1538,21 @@
             }
         }
 
-        function hideRemoteSelectionBox() {
-            const box = getRemoteSelectionBox();
+        function hideRemoteSelectionBox(remotePlayerNum) {
+            const box = getRemoteSelectionBox(remotePlayerNum);
             box.style.display = 'none';
         }
 
+        function hideAllRemoteSelectionBoxes() {
+            Object.keys(selectionBoxes).forEach(pNum => {
+                if (parseInt(pNum) !== playerNumber) {
+                    selectionBoxes[pNum].style.display = 'none';
+                }
+            });
+        }
+
         // Show hint box when P2 finds a valid selection
-        function showHintBox(x, y, width, height) {
+        function showHintBox(x, y, width, height, fromPlayer = 2) {
             // Clear any existing timeout
             if (hintTimeout) {
                 clearTimeout(hintTimeout);
@@ -1436,6 +1563,9 @@
             hintBox.style.width = `${width}px`;
             hintBox.style.height = `${height}px`;
             hintBox.style.display = 'block';
+            
+            // Update the hint label to show which player found it
+            hintBox.setAttribute('data-from-player', fromPlayer);
             
             // Auto-hide after 5 seconds
             hintTimeout = setTimeout(() => {
@@ -1488,20 +1618,20 @@
             roomCodeInput.focus();
         }
 
-        function showWaitingRoom(code) {
+        function showWaitingRoom(code, numPlayers = 1) {
             lobbyButtons.classList.add('hidden');
             joinForm.classList.add('hidden');
             waitingRoom.classList.remove('hidden');
             roomCodeDisplay.textContent = code;
+            totalPlayers = numPlayers;
+            updatePlayerListUI(totalPlayers);
             
             if (playerNumber === 1) {
-                waitingStatus.textContent = 'Waiting for Player 2 to join...';
-                p2Slot.classList.add('empty');
-                p2Slot.querySelector('.player-role').textContent = 'Waiting...';
+                waitingStatus.textContent = 'You can play solo or wait for others!';
+                playSoloBtn.style.display = 'inline-block';
             } else {
-                waitingStatus.textContent = 'Waiting for host to start...';
-                p2Slot.classList.remove('empty');
-                p2Slot.querySelector('.player-role').textContent = '🍏 Helper (You)';
+                waitingStatus.textContent = `You are Player ${playerNumber} (helper)`;
+                playSoloBtn.style.display = 'none';
             }
         }
 
@@ -2107,12 +2237,13 @@
                         
                         // Emit valid selection hint to P1
                         const myBox = getMySelectionBox();
-                        socket.emit('p2-valid-hint', {
+                        socket.emit('helper-valid-hint', {
                             x: parseInt(myBox.style.left),
                             y: parseInt(myBox.style.top),
                             width: parseInt(myBox.style.width),
                             height: parseInt(myBox.style.height),
-                            sum: sum
+                            sum: sum,
+                            fromPlayer: playerNumber
                         });
                     } else {
                         showFeedback(sum, false, selectedCells.length);
@@ -2242,6 +2373,13 @@
         });
         copyCodeBtn.addEventListener('click', copyRoomCode);
         leaveRoomBtn.addEventListener('click', leaveRoom);
+        
+        // Play solo button - allows P1 to start without waiting for other players
+        playSoloBtn.addEventListener('click', () => {
+            if (playerNumber === 1) {
+                showHomeViewMultiplayer();
+            }
+        });
 
         roomCodeInput.addEventListener('keyup', (e) => {
             if (e.key === 'Enter') joinRoom();
