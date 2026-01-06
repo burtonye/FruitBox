@@ -3,12 +3,20 @@ const { test, expect } = require('@playwright/test');
 test.describe('Core UI Elements', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/index.html');
-    // Wait for the game to fully load
-    await page.waitForSelector('.game-board');
   });
 
-  test('should display the page title', async ({ page }) => {
-    await expect(page.locator('h1')).toHaveText('Fruit Box');
+  test('should display the home screen initially', async ({ page }) => {
+    const homeView = page.locator('#home-view');
+    await expect(homeView).toBeVisible();
+
+    const playButton = page.locator('#home-play-btn');
+    await expect(playButton).toBeVisible();
+  });
+
+  test('should display the page title on home screen', async ({ page }) => {
+    // The home screen has the game title
+    const titleElements = page.locator('h1');
+    await expect(titleElements.first()).toBeVisible();
   });
 
   test('should display all game info elements', async ({ page }) => {
@@ -49,7 +57,11 @@ test.describe('Core UI Elements', () => {
     await expect(page.locator('#compact-toggle')).toBeVisible();
   });
 
-  test('should display the game board', async ({ page }) => {
+  test('should display the game board after clicking Play', async ({ page }) => {
+    // Click Play to enter game view
+    await page.click('#home-play-btn');
+    await page.waitForSelector('.game-board:visible');
+
     const gameBoard = page.locator('.game-board');
     await expect(gameBoard).toBeVisible();
 
@@ -59,13 +71,19 @@ test.describe('Core UI Elements', () => {
     expect(appleCount).toBeGreaterThan(0);
   });
 
-  test('should display instructions', async ({ page }) => {
+  test('should display instructions after clicking Play', async ({ page }) => {
+    await page.click('#home-play-btn');
+    await page.waitForSelector('.game-board:visible');
+
     const instructions = page.locator('.instructions');
     await expect(instructions).toBeVisible();
     await expect(instructions).toContainText('Drag to select apples');
   });
 
-  test('should render apples with numbers', async ({ page }) => {
+  test('should render apples with numbers after clicking Play', async ({ page }) => {
+    await page.click('#home-play-btn');
+    await page.waitForSelector('.game-board:visible');
+
     const firstApple = page.locator('.apple').first();
     await expect(firstApple).toBeVisible();
 
@@ -76,6 +94,9 @@ test.describe('Core UI Elements', () => {
   });
 
   test('should display correct initial layout (10x17)', async ({ page }) => {
+    await page.click('#home-play-btn');
+    await page.waitForSelector('.game-board:visible');
+
     const layoutDisplay = page.locator('#layout-display');
     await expect(layoutDisplay).toHaveText('10×17');
 

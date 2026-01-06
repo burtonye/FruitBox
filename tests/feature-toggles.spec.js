@@ -3,7 +3,10 @@ const { test, expect } = require('@playwright/test');
 test.describe('Feature Toggles', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/index.html');
-    await page.waitForSelector('.game-board');
+    // Click Play button to enter game view
+    await page.click('#home-play-btn');
+    // Wait for game board to be visible
+    await page.waitForSelector('.game-board:visible');
     await page.waitForTimeout(500);
   });
 
@@ -83,14 +86,17 @@ test.describe('Feature Toggles', () => {
 
     // Set a score to verify it resets
     await page.evaluate(() => {
-      window.score = 25;
-      window.scoreDisplay.textContent = window.score;
+      score = 25;
+      document.getElementById('score').textContent = score;
     });
 
     await expect(scoreDisplay).toHaveText('25');
 
     // Toggle compact mode
     await compactToggle.check();
+
+    // Wait for game to restart (stays in game view, no need to click Play)
+    await page.waitForTimeout(500);
 
     // Score should be reset (new game started)
     await expect(scoreDisplay).toHaveText('0');
@@ -166,7 +172,10 @@ test.describe('Feature Toggles', () => {
 
     // Reload the page with mobile viewport
     await page.reload();
-    await page.waitForSelector('.game-board');
+
+    // Click Play to enter game view
+    await page.click('#home-play-btn');
+    await page.waitForSelector('.game-board:visible');
     await page.waitForTimeout(500);
 
     const compactToggle = page.locator('#compact-toggle');
@@ -185,7 +194,10 @@ test.describe('Feature Toggles', () => {
 
     // Reload the page
     await page.reload();
-    await page.waitForSelector('.game-board');
+
+    // Click Play to enter game view
+    await page.click('#home-play-btn');
+    await page.waitForSelector('.game-board:visible');
     await page.waitForTimeout(500);
 
     const layoutDisplay = page.locator('#layout-display');

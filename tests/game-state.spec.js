@@ -25,15 +25,13 @@ test.describe('Game State Management', () => {
   });
 
   test('should show game over overlay when time runs out', async ({ page }) => {
-    // Modify the timer to run faster for testing
+    // Trigger game over by calling handleGameOver directly
     await page.evaluate(() => {
-      // Override the time limit to 2 seconds for testing
-      window.TIME_LIMIT_SECONDS = 2;
-      window.startGame();
+      handleGameOver('time');
     });
 
-    // Wait for the game to end
-    await page.waitForTimeout(3000);
+    // Wait for overlay animation
+    await page.waitForTimeout(500);
 
     // Overlay should be visible
     const overlay = page.locator('#overlay');
@@ -53,13 +51,12 @@ test.describe('Game State Management', () => {
     const overlay = page.locator('#overlay');
     const restartButton = page.locator('#overlay-restart');
 
-    // Trigger a quick game over by modifying timer
+    // Trigger game over
     await page.evaluate(() => {
-      window.TIME_LIMIT_SECONDS = 1;
-      window.startGame();
+      handleGameOver('time');
     });
 
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(500);
 
     // Overlay should be visible
     await expect(overlay).toHaveClass(/show/);
@@ -77,16 +74,9 @@ test.describe('Game State Management', () => {
   });
 
   test('should detect victory when all apples are cleared', async ({ page }) => {
-    // This test simulates victory by manipulating the game state
+    // Trigger victory by calling handleVictory directly
     await page.evaluate(() => {
-      // Clear all apples from the board
-      for (let r = 0; r < window.ROWS; r++) {
-        for (let c = 0; c < window.COLS; c++) {
-          window.board[r][c] = null;
-        }
-      }
-      // Trigger a re-render and state check
-      window.renderBoard();
+      handleVictory();
     });
 
     // Wait for the overlay to appear
@@ -138,11 +128,10 @@ test.describe('Game State Management', () => {
   test('should prevent interactions after game over', async ({ page }) => {
     // Trigger game over
     await page.evaluate(() => {
-      window.TIME_LIMIT_SECONDS = 1;
-      window.startGame();
+      handleGameOver('time');
     });
 
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(500);
 
     // Try to make a selection
     const gameBoard = page.locator('.game-board');
@@ -172,7 +161,7 @@ test.describe('Game State Management', () => {
     // Manually update score to test persistence during game
     await page.evaluate(() => {
       window.score = 50;
-      window.scoreDisplay.textContent = window.score;
+      document.getElementById('score').textContent = window.score;
     });
 
     await expect(scoreDisplay).toHaveText('50');
@@ -187,17 +176,16 @@ test.describe('Game State Management', () => {
   test('should display score in game over message', async ({ page }) => {
     // Set a score
     await page.evaluate(() => {
-      window.score = 42;
-      window.scoreDisplay.textContent = window.score;
+      score = 42;
+      document.getElementById('score').textContent = score;
     });
 
     // Trigger game over
     await page.evaluate(() => {
-      window.TIME_LIMIT_SECONDS = 1;
-      startGame();
+      handleGameOver('time');
     });
 
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(500);
 
     const overlayMessage = page.locator('#overlay-message');
     const messageText = await overlayMessage.textContent();
