@@ -1,5 +1,5 @@
 const CACHE_NAME = 'fruit-box-v2';
-const ASSETS = ['./', './fruit_box.html', './manifest.json', './icon.svg', './3.mp3'];
+const ASSETS = ['./', './index.html', './manifest.json', './icon.svg', './3.mp3'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(

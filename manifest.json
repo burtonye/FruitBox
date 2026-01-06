@@ -1,7 +1,7 @@
 {
   "name": "Fruit Box",
   "short_name": "Fruit Box",
-  "start_url": "./fruit_box.html",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#1f5f3b",
   "theme_color": "#1f5f3b",
