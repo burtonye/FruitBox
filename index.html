@@ -87,22 +87,30 @@
 
         .game-area-container {
             position: relative;
-            background: #8B4513;
+            background: #654321;
             border-radius: 15px;
-            padding: 15px;
+            padding: 20px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            max-width: 100%;
+            width: min(95vw, 950px);
+            /* Fixed baseline height to prevent jumping */
+            min-height: clamp(600px, 75vh, 850px);
             margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
         }
 
         .game-container {
             position: relative;
             background: transparent;
-            border-radius: 0;
-            padding: 0;
-            box-shadow: none;
-            max-width: 100%;
-            margin-bottom: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
 
         .game-board {
@@ -113,6 +121,7 @@
             border-radius: 10px;
             position: relative;
             touch-action: none;
+            margin: 0 auto;
         }
 
         .cell {
@@ -172,13 +181,53 @@
         }
 
         .apple.removed {
-            animation: pop 0.3s ease-out forwards;
+            visibility: hidden;
         }
 
-        @keyframes pop {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.3); opacity: 0.5; }
-            100% { transform: scale(0); opacity: 0; }
+        .apple-flying {
+            position: fixed;
+            pointer-events: none;
+            z-index: 1100;
+            width: var(--cell-size);
+            height: var(--cell-size);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: calc(var(--cell-size) * 0.4);
+            font-weight: bold;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            background: radial-gradient(circle at 30% 30%, #ff6b6b, #c0392b);
+            border-radius: 50%;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+        }
+
+        .apple-flying::before {
+            content: '';
+            position: absolute;
+            top: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 3px;
+            height: 10px;
+            background: #5d4e37;
+            border-radius: 2px;
+        }
+
+        .apple-flying::after {
+            content: '';
+            position: absolute;
+            top: -6px;
+            left: 55%;
+            width: 10px;
+            height: 8px;
+            background: #27ae60;
+            border-radius: 50% 50% 50% 0;
+            transform: rotate(45deg);
+        }
+
+        body.light-colors .apple-flying {
+            background: radial-gradient(circle at 30% 30%, #ffb3b3, #e57373);
         }
 
         .selection-box {
@@ -280,6 +329,51 @@
             font-size: clamp(12px, 2.5vw, 14px);
         }
 
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: white;
+            font-size: clamp(12px, 2.5vw, 14px);
+        }
+
+        .volume-control input[type="range"] {
+            width: 80px;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255,255,255,0.3);
+            outline: none;
+            cursor: pointer;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .volume-control input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #4CAF50;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            transition: transform 0.1s;
+        }
+
+        .volume-control input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        .volume-control input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #4CAF50;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
         body.light-colors {
             background: #4c8b64;
         }
@@ -320,11 +414,11 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            gap: 60px;
+            justify-content: space-evenly;
             width: 100%;
-            padding: 60px 20px;
-            min-height: 100vh;
+            height: 100%;
+            min-height: inherit;
+            padding: 20px;
         }
 
         .home-view.hidden {
@@ -333,6 +427,11 @@
 
         .home-title {
             text-align: center;
+            margin-bottom: 25px; /* Added breathing room */
+        }
+
+        .home-title.hidden {
+            display: none;
         }
 
         .home-subtitle {
@@ -370,18 +469,19 @@
 
         .home-play-area {
             position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: clamp(40px, 8vw, 100px);
             width: 100%;
-            max-width: 600px;
-            height: 300px;
+            max-width: 900px;
         }
 
-        .play-button {
-            position: absolute;
-            left: 15%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            width: clamp(140px, 25vw, 200px);
-            height: clamp(140px, 25vw, 200px);
+        button.play-button {
+            position: relative;
+            flex-shrink: 0;
+            width: clamp(140px, 20vw, 180px);
+            height: clamp(140px, 20vw, 180px);
             background: radial-gradient(circle at 35% 35%, #ff6b6b, #d32f2f);
             border-radius: 45% 50% 45% 50%;
             border: none;
@@ -389,12 +489,13 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: clamp(28px, 6vw, 42px);
+            font-size: clamp(28px, 5vw, 42px);
             font-weight: bold;
             color: white;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
             box-shadow: 0 8px 20px rgba(0,0,0,0.4);
             transition: transform 0.2s, box-shadow 0.2s;
+            padding: 0;
         }
 
         .play-button::before {
@@ -421,32 +522,35 @@
             border-radius: 50% 50% 50% 0;
         }
 
-        .play-button:hover {
-            transform: translate(-50%, -50%) scale(1.05);
+        button.play-button:hover {
+            transform: scale(1.05);
             box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            background: radial-gradient(circle at 35% 35%, #ff8a8a, #e53935);
         }
 
-        .play-button:active {
-            transform: translate(-50%, -50%) scale(0.98);
+        button.play-button:active {
+            transform: scale(0.98);
         }
 
         .decorative-apples {
-            position: absolute;
-            width: 100%;
-            height: 100%;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: clamp(10px, 2vw, 20px);
             pointer-events: none;
+            width: 100%;
+            max-width: 400px;
         }
 
         .deco-apple {
-            position: absolute;
-            width: clamp(50px, 10vw, 80px);
-            height: clamp(50px, 10vw, 80px);
+            position: relative;
+            width: clamp(60px, 10vw, 80px);
+            height: clamp(60px, 10vw, 80px);
             background: radial-gradient(circle at 35% 35%, #ff6b6b, #d32f2f);
             border-radius: 45% 50% 45% 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: clamp(24px, 5vw, 36px);
+            font-size: clamp(24px, 4vw, 36px);
             font-weight: bold;
             color: white;
             text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
@@ -465,20 +569,43 @@
             border-radius: 0 0 50% 50%;
         }
 
-        .home-controls {
+        .deco-apple::after {
+            content: '';
+            position: absolute;
+            top: -12px;
+            left: 55%;
+            width: 14px;
+            height: 10px;
+            background: #4caf50;
+            border-radius: 50% 50% 50% 0;
+            transform: rotate(45deg);
+        }
+
+        /* Hide certain apples to create the pattern from the reference */
+        .deco-apple.hidden-apple {
+            visibility: hidden;
+        }
+
+        .home-bottom-controls {
             display: flex;
             gap: 20px;
             align-items: center;
             flex-wrap: wrap;
             justify-content: center;
+            margin-top: 15px;
+            color: white;
         }
 
-        .home-controls button {
+        .home-bottom-controls.hidden {
+            display: none;
+        }
+
+        .home-bottom-controls button {
             background: rgba(255,255,255,0.1);
             border: 2px solid rgba(255,255,255,0.3);
         }
 
-        .home-controls button:hover {
+        .home-bottom-controls button:hover {
             background: rgba(255,255,255,0.2);
         }
 
@@ -510,6 +637,11 @@
 
         .game-board-view {
             width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
 
         .game-board-view.hidden {
@@ -533,6 +665,9 @@
         <input type="number" class="target-input" id="time-input" value="120" min="10" max="600" step="10">
         <button onclick="startGame()">New Game</button>
         <button id="bgm-toggle" type="button">Music: On</button>
+        <label class="volume-control">
+            🔊 <input type="range" id="volume-slider" min="0" max="100" value="40">
+        </label>
         <label class="light-toggle">
             <input type="checkbox" id="light-toggle">
             Light Colors
@@ -547,7 +682,8 @@
     <div class="game-area-container" id="game-area-container">
         <!-- Home view (initially shown) -->
         <div class="home-view" id="home-view">
-            <div class="home-title">
+            <!-- Home view title (inside the container now for stable layout) -->
+            <div class="home-title" id="home-title">
                 <div class="home-subtitle">GameBurton</div>
                 <h1 class="home-game-title">
                     <span class="fruit-part">Fruit</span> <span class="box-part">Box</span>
@@ -557,27 +693,22 @@
             <div class="home-play-area">
                 <button class="play-button" id="home-play-btn">Play</button>
                 <div class="decorative-apples">
-                    <div class="deco-apple" style="top: 0%; right: 28%;">5</div>
-                    <div class="deco-apple" style="top: 0%; right: 15%;">7</div>
-                    <div class="deco-apple" style="top: 0%; right: 2%;">6</div>
-                    <div class="deco-apple" style="top: 0%; right: -11%;">8</div>
-                    <div class="deco-apple" style="top: 28%; right: 21%;">3</div>
-                    <div class="deco-apple" style="top: 28%; right: 8%;">2</div>
-                    <div class="deco-apple" style="top: 28%; right: -5%;">9</div>
-                    <div class="deco-apple" style="top: 58%; right: 30%;">1</div>
-                    <div class="deco-apple" style="top: 58%; right: 0%;">4</div>
+                    <!-- Row 1: 5, 7, 6, 8 -->
+                    <div class="deco-apple">5</div>
+                    <div class="deco-apple">7</div>
+                    <div class="deco-apple">6</div>
+                    <div class="deco-apple">8</div>
+                    <!-- Row 2: empty, 3, 2, 9 -->
+                    <div class="deco-apple hidden-apple"></div>
+                    <div class="deco-apple">3</div>
+                    <div class="deco-apple">2</div>
+                    <div class="deco-apple">9</div>
+                    <!-- Row 3: 1, empty, 4, empty -->
+                    <div class="deco-apple">1</div>
+                    <div class="deco-apple hidden-apple"></div>
+                    <div class="deco-apple">4</div>
+                    <div class="deco-apple hidden-apple"></div>
                 </div>
-            </div>
-
-            <div class="home-controls">
-                <label class="light-toggle">
-                    <input type="checkbox" id="home-light-toggle">
-                    Light Colors
-                </label>
-                <label class="light-toggle">
-                    <input type="checkbox" id="home-bgm-toggle" checked>
-                    BGM
-                </label>
             </div>
 
             <!-- Score history (populated dynamically) -->
@@ -593,6 +724,19 @@
                 Drag to select apples that sum to exactly 10. Get 1 point per apple!
             </div>
         </div>
+    </div>
+
+    <!-- Home bottom controls (shown only on home screen) -->
+    <div class="home-bottom-controls" id="home-bottom-controls">
+        <button id="reset-btn">Reset</button>
+        <label class="light-toggle">
+            <input type="checkbox" id="home-light-toggle">
+            Light Colors
+        </label>
+        <label class="light-toggle">
+            <input type="checkbox" id="home-bgm-toggle" checked>
+            BGM
+        </label>
     </div>
 
     <!-- Selection box -->
@@ -652,6 +796,7 @@
         const overlayRestart = document.getElementById('overlay-restart');
         const bgm = document.getElementById('bgm');
         const bgmToggle = document.getElementById('bgm-toggle');
+        const volumeSlider = document.getElementById('volume-slider');
         const rootStyle = document.documentElement.style;
         const layoutDisplay = document.getElementById('layout-display');
 
@@ -672,12 +817,14 @@
         function showHomeView() {
             homeView.classList.remove('hidden');
             gameBoardView.classList.add('hidden');
+            homeBottomControls.classList.remove('hidden');
             updateScoreHistory();
         }
 
         function showGameView() {
             homeView.classList.add('hidden');
             gameBoardView.classList.remove('hidden');
+            homeBottomControls.classList.add('hidden');
         }
 
         function startGame() {
@@ -719,36 +866,31 @@
         }
 
         function updateLayout() {
-            const containerStyles = getComputedStyle(gameContainer);
-            const paddingX = parseFloat(containerStyles.paddingLeft) + parseFloat(containerStyles.paddingRight);
-            const paddingY = parseFloat(containerStyles.paddingTop) + parseFloat(containerStyles.paddingBottom);
+            // Use the stable container as our reference
+            const containerRect = gameAreaContainer.getBoundingClientRect();
+            const paddingX = 40; // Container padding (20px * 2)
+            const paddingY = 40; 
+            
             const boardStyles = getComputedStyle(gameBoard);
-            const boardPaddingX = parseFloat(boardStyles.paddingLeft) + parseFloat(boardStyles.paddingRight);
-            const boardPaddingY = parseFloat(boardStyles.paddingTop) + parseFloat(boardStyles.paddingBottom);
-
-            // Get grid gap from computed styles
+            const boardPaddingX = parseFloat(boardStyles.paddingLeft) + parseFloat(boardStyles.paddingRight) || 20;
+            const boardPaddingY = parseFloat(boardStyles.paddingTop) + parseFloat(boardStyles.paddingBottom) || 20;
             const gridGap = parseFloat(boardStyles.gap) || 5;
 
-            const maxWidth = window.innerWidth - paddingX - boardPaddingX - 40;
-            const topOffset = gameContainer.getBoundingClientRect().top;
+            // Measure instructions element
+            const instructionsHeight = instructionsDisplay.offsetHeight || 30;
+            const instructionsMargin = 40; // Total vertical margin/gap
 
-            // Measure actual instructions element height
-            const instructionsRect = instructionsDisplay.getBoundingClientRect();
-            const instructionsHeight = instructionsRect.height || 50;
-            const instructionsMargin = 40; // margin-top + margin-bottom
-            const gameContainerMargin = 20; // margin-bottom on game-container
+            const maxWidth = containerRect.width - paddingX - boardPaddingX;
+            const maxHeight = containerRect.height - paddingY - boardPaddingY - instructionsHeight - instructionsMargin;
 
-            const bottomPadding = 40;
-            const totalBottomReserve = instructionsHeight + instructionsMargin + gameContainerMargin + bottomPadding;
-            const availableHeight = window.innerHeight - topOffset - paddingY - boardPaddingY - totalBottomReserve;
-            const maxHeight = Math.max(availableHeight, 200);
-
-            // Account for grid gaps when calculating cell size
+            // Account for grid gaps
             const totalGapWidth = gridGap * (COLS - 1);
             const totalGapHeight = gridGap * (ROWS - 1);
 
             const widthBased = Math.floor((maxWidth - totalGapWidth) / COLS);
             const heightBased = Math.floor((maxHeight - totalGapHeight) / ROWS);
+            
+            // cellSize should be at least 28px, and at most 60px
             const cellSize = Math.max(28, Math.min(60, Math.min(widthBased, heightBased)));
 
             rootStyle.setProperty('--cell-size', `${cellSize}px`);
@@ -760,6 +902,7 @@
             board = [];
             // Determine max apple value based on target
             const maxValue = Math.min(9, targetSum - 1);
+            let totalSum = 0;
 
             for (let r = 0; r < ROWS; r++) {
                 board[r] = [];
@@ -767,6 +910,39 @@
                     // Generate numbers 1 to maxValue
                     const num = Math.floor(Math.random() * maxValue) + 1;
                     board[r][c] = num;
+                    totalSum += num;
+                }
+            }
+
+            // Ensure total sum is divisible by target (guarantees winnable game)
+            // Adjust the last cell to make the sum divisible by targetSum
+            const remainder = totalSum % targetSum;
+            if (remainder !== 0) {
+                const lastRow = ROWS - 1;
+                const lastCol = COLS - 1;
+                const adjustment = targetSum - remainder;
+                
+                // Calculate what the last cell should be
+                let newLastValue = board[lastRow][lastCol] + adjustment;
+                
+                // If newLastValue exceeds maxValue, distribute across multiple cells
+                if (newLastValue <= maxValue) {
+                    board[lastRow][lastCol] = newLastValue;
+                } else {
+                    // Try to find cells to adjust
+                    let neededAdjustment = adjustment;
+                    outerLoop:
+                    for (let r = ROWS - 1; r >= 0 && neededAdjustment > 0; r--) {
+                        for (let c = COLS - 1; c >= 0 && neededAdjustment > 0; c--) {
+                            const currentVal = board[r][c];
+                            const canAdd = maxValue - currentVal;
+                            if (canAdd > 0) {
+                                const addAmount = Math.min(canAdd, neededAdjustment);
+                                board[r][c] += addAmount;
+                                neededAdjustment -= addAmount;
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -915,15 +1091,71 @@
             return apples.reduce((sum, apple) => sum + apple.value, 0);
         }
 
+        // Alternating direction for physics animation
+        let physicsDirection = 1;
+
+        function createFlyingApple(appleData) {
+            const { element, value, rect } = appleData;
+            
+            // Create a flying clone
+            const flyingApple = document.createElement('div');
+            flyingApple.className = 'apple-flying';
+            flyingApple.textContent = value;
+            flyingApple.style.width = `${rect.width}px`;
+            flyingApple.style.height = `${rect.height}px`;
+            flyingApple.style.left = `${rect.left}px`;
+            flyingApple.style.top = `${rect.top}px`;
+            document.body.appendChild(flyingApple);
+
+            // Physics parameters (based on original game)
+            const direction = physicsDirection;
+            physicsDirection *= -1; // Alternate direction
+            
+            const initialVelocityX = (Math.random() * 20) * 1.2 * direction;
+            const initialVelocityY = -Math.random() * 25;
+            const rotationSpeed = 3 * direction;
+            const gravity = 0.07;
+            
+            let x = rect.left;
+            let y = rect.top;
+            let rotation = 0;
+            let time = 0;
+
+            function animate() {
+                time += 2;
+                
+                // Update position with physics
+                x += initialVelocityX;
+                y += initialVelocityY + gravity * time * time;
+                rotation += rotationSpeed;
+
+                flyingApple.style.left = `${x}px`;
+                flyingApple.style.top = `${y}px`;
+                flyingApple.style.transform = `rotate(${rotation}deg)`;
+
+                // Continue animation until apple is off-screen (time > 45 in original)
+                if (time < 45) {
+                    requestAnimationFrame(animate);
+                } else {
+                    flyingApple.remove();
+                }
+            }
+
+            requestAnimationFrame(animate);
+        }
+
         function removeApples(apples) {
+            // Create flying animations for each apple
             apples.forEach(apple => {
+                createFlyingApple(apple);
                 apple.element.classList.add('removed');
                 board[apple.row][apple.col] = null;
             });
 
+            // Render board after a short delay
             setTimeout(() => {
                 renderBoard();
-            }, 300);
+            }, 100);
         }
 
         function showFeedback(sum, valid, count) {
@@ -1014,7 +1246,7 @@
 
         function showOverlay(title, message) {
             overlayTitle.textContent = title;
-            overlayMessage.textContent = message;
+            overlayMessage.innerHTML = message.replace(/\n/g, '<br>');
             overlay.classList.add('show');
         }
 
@@ -1052,7 +1284,12 @@
             gameOver = true;
             stopTimer();
             gameScores.push(score);
-            showOverlay('You Win!', `Great job! Your score: ${score}`);
+            
+            // Calculate completion time for perfect score
+            const elapsedMs = Date.now() - timeStart;
+            const elapsedSeconds = (elapsedMs / 1000).toFixed(1);
+            
+            showOverlay('🎉 Perfect!', `All apples cleared!\nScore: ${score} | Time: ${elapsedSeconds}s`);
         }
 
         function handleGameOver(reason) {
@@ -1079,11 +1316,11 @@
 
         function updateBgmState() {
             bgmToggle.textContent = bgmEnabled ? 'Music: On' : 'Music: Off';
+            bgm.volume = volumeSlider.value / 100;
             if (!bgmEnabled) {
                 bgm.pause();
                 return;
             }
-            bgm.volume = 0.4;
             bgm.play().catch(() => {
                 // Ignore autoplay restrictions
             });
@@ -1156,6 +1393,10 @@
             updateBgmState();
         });
 
+        volumeSlider.addEventListener('input', () => {
+            bgm.volume = volumeSlider.value / 100;
+        });
+
         bgm.addEventListener('ended', () => {
             if (bgmEnabled) {
                 setTimeout(() => {
@@ -1195,6 +1436,9 @@
         const homePlayBtn = document.getElementById('home-play-btn');
         const homeLightToggle = document.getElementById('home-light-toggle');
         const homeBgmToggle = document.getElementById('home-bgm-toggle');
+        const homeTitle = document.getElementById('home-title');
+        const homeBottomControls = document.getElementById('home-bottom-controls');
+        const resetBtn = document.getElementById('reset-btn');
 
         // Initialize without auto-starting
         const prefersCompact = window.matchMedia('(max-width: 600px)').matches;
@@ -1230,6 +1474,12 @@
 
             // Start the game
             startGame();
+        });
+
+        // Reset button handler - clears score history
+        resetBtn.addEventListener('click', () => {
+            gameScores = [];
+            updateScoreHistory();
         });
     </script>
 </body>

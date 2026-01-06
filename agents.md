@@ -136,6 +136,69 @@ bgm.addEventListener('ended', () => {
 
 ---
 
+## Original Game Comparison Review
+
+**Date:** 2026-01-06
+**Reference:** `fruit_box_obfuscated.js` (original Japanese game from gamesaien.com)
+
+### Analysis Summary
+
+The original game was built using Adobe Animate/CreateJS framework with timeline-based animations. Our HTML implementation is a vanilla JavaScript recreation with modern CSS.
+
+### Feature Comparison Matrix
+
+| Feature | Original | Our HTML | Decision |
+|---------|----------|----------|----------|
+| Grid layout (10×17) | ✅ Fixed | ✅ + Compact mode | ✅ Complete |
+| Target sum | Fixed at 10 | Configurable (1-100) | ✅ Enhanced |
+| Timer (120s) | ✅ Fixed | ✅ Configurable | ✅ Enhanced |
+| Box selection | ✅ | ✅ | ✅ Complete |
+| Score tracking | ✅ | ✅ | ✅ Complete |
+| Light Colors toggle | ✅ | ✅ | ✅ Complete |
+| BGM toggle | ✅ | ✅ | ✅ Complete |
+| Home screen | ✅ | ✅ + Score history | ✅ Enhanced |
+| Sound effects (match, game over) | ✅ 4 sounds | ❌ BGM only | ⏭️ Skip for now |
+| Number validation (divisible sum) | ✅ | ❌ | 🔧 **Must have** |
+| Cookie/localStorage persistence | ✅ | ❌ | ⏭️ Skip for now |
+| Visual time bar | ✅ | ❌ Numbers only | ⏭️ Skip |
+| Perfect score time display | ✅ | ❌ | 🔧 **Implement** |
+| Volume slider | ✅ | ❌ | 🔧 **Implement** |
+| Apple physics animation | ✅ Gravity + rotation | ❌ Simple pop | 🔧 **Must have** |
+| Multi-language (JP/EN) | ✅ | ❌ English only | ⏭️ Skip |
+| "More Games" button | ✅ | ❌ | ⏭️ N/A |
+
+### Features to Implement (This Sprint)
+
+1. **Number Validation (Must Have)**
+   - Ensure total board sum is divisible by target
+   - Guarantees every game is mathematically winnable
+   - Original logic: last cell = `target - (sum % target)`
+
+2. **Perfect Score Time Display (Implement)**
+   - When all apples cleared, show completion time
+   - Display format: "Time: XX.X seconds"
+   - Fun metric for speed-runners
+
+3. **Volume Slider (Implement)**
+   - Draggable slider to control BGM volume
+   - Range: 0-100%
+   - Visual feedback during drag
+
+4. **Apple Physics Animation (Must Have)**
+   - Replace simple `pop` animation
+   - Implement gravity-based falling
+   - Add horizontal drift and rotation
+   - More satisfying removal effect
+
+### Features Skipped (Future Consideration)
+
+- **Sound effects:** Would require sourcing/creating audio files
+- **Cookie persistence:** Not critical for core gameplay
+- **Visual time bar:** Numbers are functional
+- **Multi-language:** Niche audience
+
+---
+
 ## Deployment & Infrastructure
 
 ### Git Branch Structure
@@ -214,6 +277,12 @@ All game flows have been tested:
 
 ## Changelog Summary
 
+**Version: 2.1** (design-dev-work branch)
+- ✅ Number validation (sum divisible by target)
+- ✅ Perfect score time display
+- ✅ Volume slider control
+- ✅ Apple physics animation
+
 **Version: 2.0** (design-dev-work branch)
 - ✅ Home screen implementation
 - ✅ Score history tracking
@@ -221,6 +290,7 @@ All game flows have been tested:
 - ✅ Vertical spacing fixes
 - ✅ Music loop enhancement
 - ✅ Container architecture restructure
+- ✅ Original game comparison review
 
 **Version: 1.0** (main branch)
 - ✅ Core game mechanics (grid, selection, scoring)
