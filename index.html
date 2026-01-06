@@ -353,7 +353,7 @@
         </div>
     </div>
 
-    <audio id="bgm" src="3.mp3" loop></audio>
+    <audio id="bgm" src="3.mp3"></audio>
 
     <script>
         const DEFAULT_LAYOUT = { rows: 10, cols: 17 };
@@ -859,6 +859,17 @@
         bgmToggle.addEventListener('click', () => {
             bgmEnabled = !bgmEnabled;
             updateBgmState();
+        });
+
+        bgm.addEventListener('ended', () => {
+            if (bgmEnabled) {
+                setTimeout(() => {
+                    bgm.currentTime = 0;
+                    bgm.play().catch(() => {
+                        // Ignore autoplay restrictions
+                    });
+                }, 1000);
+            }
         });
 
         // Light color toggle
