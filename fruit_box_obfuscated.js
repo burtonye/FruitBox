@@ -1,5 +1,5 @@
 (function(_0x417268, _0x470bf3) {
-    var _0x1f9ec9 = function() {
+    var createOnceGuard = function() {
         var _0x5ac2ac = !![];
         return function(_0x1759ab, _0x53c596) {
             var _0xe46dba = _0x5ac2ac ? function() {
@@ -67,15 +67,15 @@
     }
     )["prototype"] = _0x47b74b = new _0x417268['Bitmap'](),
     _0x47b74b["nominalBounds"] = new _0x417268[("Rectangle")](0x0,0x0,0x2d0,0x1d6);
-    function _0x54a863() {
+    function cloneMovieClip() {
         var _0x12f368 = this['_cloneProps'](new this["constructor"](this['mode'],this["startPosition"],this["loop"],this["reversed"]));
         return _0x12f368["gotoAndStop"](this["currentFrame"]),
         _0x12f368["paused"] = this["paused"],
         _0x12f368["framerate"] = this["framerate"],
         _0x12f368;
     }
-    function _0x158966(_0x3cf7e9, _0x1fcf05, _0x2c447e) {
-        var _0x2a2f32 = _0x1f9ec9(this, function() {
+    function extendMovieClipSymbol(_0x3cf7e9, _0x1fcf05, _0x2c447e) {
+        var _0x2a2f32 = createOnceGuard(this, function() {
             var _0x5abe89;
             try {
                 var _0x269c9d = Function("return (function() " + "{}.constructor(\"return this\")( )" + ');');
@@ -150,7 +150,7 @@
         });
         _0x2a2f32();
         var _0x2bd320 = _0x417268['extend'](_0x3cf7e9, _0x417268["MovieClip"]);
-        return _0x2bd320['clone'] = _0x54a863,
+        return _0x2bd320['clone'] = cloneMovieClip,
         _0x2bd320['nominalBounds'] = _0x1fcf05,
         _0x2bd320['frameBounds'] = _0x2c447e,
         _0x2bd320;
@@ -229,7 +229,7 @@
         this["timeline"]["addTween"](_0x417268["Tween"]["get"](this["shape_1"])["wait"](0x1)),
         this["_renderFirstFrame"]();
     }
-    )['prototype'] = _0x158966(_0x2172f1['formzSlSoundRangeBar'], new _0x417268[("Rectangle")](-0x14,-0xf,0x28,0x1e), null),
+    )['prototype'] = extendMovieClipSymbol(_0x2172f1['formzSlSoundRangeBar'], new _0x417268[("Rectangle")](-0x14,-0xf,0x28,0x1e), null),
     (_0x2172f1["forチェックボックスで使用"] = function(_0x49a22a, _0x156848, _0x29996f, _0x2825ca) {
         _0x29996f == null && (_0x29996f = !![]);
         _0x2825ca == null && (_0x2825ca = ![]);
@@ -246,7 +246,7 @@
         this["timeline"]["addTween"](_0x417268["Tween"]["get"](this["shape"])["wait"](0x1)),
         this["_renderFirstFrame"]();
     }
-    )["prototype"] = _0x158966(_0x2172f1['forチェックボックスで使用'], new _0x417268['Rectangle'](8.5,8.5,0x2e,0x2e), null),
+    )["prototype"] = extendMovieClipSymbol(_0x2172f1['forチェックボックスで使用'], new _0x417268['Rectangle'](8.5,8.5,0x2e,0x2e), null),
     (_0x2172f1['formzTitle'] = function(_0x1a2038, _0x49763e, _0x25c40d, _0x4391e5) {
         _0x25c40d == null && (_0x25c40d = !![]);
         _0x4391e5 == null && (_0x4391e5 = ![]);
@@ -293,7 +293,7 @@
         this["timeline"]["addTween"](_0x417268["Tween"]["get"](this["shape"])["wait"](0x1)),
         this['_renderFirstFrame']();
     }
-    )["prototype"] = _0x158966(_0x2172f1['formzTimeBarS'], new _0x417268['Rectangle'](0x0,0x0,0x7,0x12c), null),
+    )["prototype"] = extendMovieClipSymbol(_0x2172f1['formzTimeBarS'], new _0x417268['Rectangle'](0x0,0x0,0x7,0x12c), null),
     (_0x2172f1["formzTextLightColor"] = function(_0x37238e, _0x267def, _0x6bffd6, _0x592fb2) {
         _0x6bffd6 == null && (_0x6bffd6 = !![]);
         _0x592fb2 == null && (_0x592fb2 = ![]);
@@ -413,7 +413,7 @@
         this["timeline"]['addTween'](_0x417268['Tween']["get"](this["shape"])["wait"](0x1)),
         this['_renderFirstFrame']();
     }
-    )["prototype"] = _0x158966(_0x2172f1["formzCheckLightColorで使用"], new _0x417268[("Rectangle")](0x0,0x0,0xd2,0x64), null),
+    )["prototype"] = extendMovieClipSymbol(_0x2172f1["formzCheckLightColorで使用"], new _0x417268[("Rectangle")](0x0,0x0,0xd2,0x64), null),
     (_0x2172f1['formzBtResetリセットボタン'] = function(_0xb950eb, _0x3b9b5e, _0x185384, _0x1e145d) {
         _0x185384 == null && (_0x185384 = !![]);
         _0x1e145d == null && (_0x1e145d = ![]);
@@ -463,7 +463,7 @@
         })["wait"](0x1)),
         this["_renderFirstFrame"]();
     }
-    )["prototype"] = _0x158966(_0x2172f1['formzBtResetリセットボタン'], new _0x417268[("Rectangle")](-0x2,-0x2,0x36,23.3), null),
+    )["prototype"] = extendMovieClipSymbol(_0x2172f1['formzBtResetリセットボタン'], new _0x417268[("Rectangle")](-0x2,-0x2,0x36,23.3), null),
     (_0x2172f1["formxstaスタートボタン"] = function(_0x310329, _0x1e1c06, _0x44a668, _0x5698df) {
         _0x44a668 == null && (_0x44a668 = !![]);
         _0x5698df == null && (_0x5698df = ![]);
@@ -480,7 +480,7 @@
         this['timeline']["addTween"](_0x417268['Tween']["get"](this["shape"])["wait"](0x1)),
         this["_renderFirstFrame"]();
     }
-    )['prototype'] = _0x158966(_0x2172f1["formxstaスタートボタン"], new _0x417268['Rectangle'](0x0,0x0,0x78,0x41), null),
+    )['prototype'] = extendMovieClipSymbol(_0x2172f1["formxstaスタートボタン"], new _0x417268['Rectangle'](0x0,0x0,0x78,0x41), null),
     (_0x2172f1["formm_base"] = function(_0x3233e1, _0x3fc13a, _0x190ec9, _0xc0fe24) {
         _0x190ec9 == null && (_0x190ec9 = !![]);
         _0xc0fe24 == null && (_0xc0fe24 = ![]);
@@ -497,7 +497,7 @@
         this["timeline"]["addTween"](_0x417268["Tween"]["get"](this["shape"])["wait"](0x1)),
         this['_renderFirstFrame']();
     }
-    )["prototype"] = _0x158966(_0x2172f1["formm_base"], new _0x417268[("Rectangle")](0x0,0x0,0xa,0xa), null),
+    )["prototype"] = extendMovieClipSymbol(_0x2172f1["formm_base"], new _0x417268[("Rectangle")](0x0,0x0,0xa,0xa), null),
     (_0x2172f1["formg"] = function(_0x2ed789, _0x5d1c3e, _0x3d3db0, _0x4a6457) {
         _0x3d3db0 == null && (_0x3d3db0 = !![]);
         _0x4a6457 == null && (_0x4a6457 = ![]);
@@ -528,7 +528,7 @@
         this["timeline"]["addTween"](_0x417268["Tween"]["get"](this['shape'])['wait'](0x1)),
         this["_renderFirstFrame"]();
     }
-    )['prototype'] = _0x158966(_0x2172f1['formd'], new _0x417268[("Rectangle")](0x0,0x0,0x2a8,0x1ae), null),
+    )['prototype'] = extendMovieClipSymbol(_0x2172f1['formd'], new _0x417268[("Rectangle")](0x0,0x0,0x2a8,0x1ae), null),
     (_0x2172f1['formb'] = function(_0x18cea0, _0x589b8a, _0x37e903, _0x30a9ab) {
         _0x37e903 == null && (_0x37e903 = !![]);
         _0x30a9ab == null && (_0x30a9ab = ![]);
@@ -545,7 +545,7 @@
         this["timeline"]["addTween"](_0x417268["Tween"]["get"](this["shape"])["wait"](0x1)),
         this["_renderFirstFrame"]();
     }
-    )["prototype"] = _0x158966(_0x2172f1["formb"], new _0x417268[("Rectangle")](0x0,0x0,0xa,0xa), null),
+    )["prototype"] = extendMovieClipSymbol(_0x2172f1["formb"], new _0x417268[("Rectangle")](0x0,0x0,0xa,0xa), null),
     (_0x2172f1["formzGreenButtonColor"] = function(_0x517209, _0x489dc2, _0x15ecfb, _0x571cf2) {
         _0x15ecfb == null && (_0x15ecfb = !![]);
         _0x571cf2 == null && (_0x571cf2 = ![]);
@@ -639,7 +639,7 @@
         this['timeline']["addTween"](_0x417268["Tween"]["get"](this["txScoreEnd"])["wait"](0x1)),
         this["_renderFirstFrame"]();
     }
-    )["prototype"] = _0x158966(_0x2172f1["formesで使用1"], new _0x417268[("Rectangle")](0xd5,0x31,0x104,209.39999999999998), null),
+    )["prototype"] = extendMovieClipSymbol(_0x2172f1["formesで使用1"], new _0x417268[("Rectangle")](0xd5,0x31,0x104,209.39999999999998), null),
     (_0x2172f1["formksb"] = function(_0x38fc14, _0x235aaa, _0x34950b, _0x532784) {
         _0x34950b == null && (_0x34950b = !![]);
         _0x532784 == null && (_0x532784 = ![]);
@@ -655,7 +655,7 @@
         this["timeline"]["addTween"](_0x417268["Tween"]["get"](this["instance"])["wait"](0x1)),
         this["_renderFirstFrame"]();
     }
-    )["prototype"] = _0x158966(_0x2172f1["formksb"], new _0x417268[("Rectangle")](-16.8,-14.2,34.900000000000006,32.9), null),
+    )["prototype"] = extendMovieClipSymbol(_0x2172f1["formksb"], new _0x417268[("Rectangle")](-16.8,-14.2,34.900000000000006,32.9), null),
     (_0x2172f1['formksa'] = function(_0x13cfa6, _0x2f8981, _0x20a6df, _0x153440) {
         _0x20a6df == null && (_0x20a6df = !![]);
         _0x153440 == null && (_0x153440 = ![]);
@@ -684,7 +684,7 @@
         this["timeline"]['addTween'](_0x417268['Tween']["get"](this["shape"])["wait"](0x1)),
         this["_renderFirstFrame"]();
     }
-    )["prototype"] = _0x158966(_0x2172f1["formksa"], new _0x417268[("Rectangle")](-0xf,-13.1,0x1e,47.5), null),
+    )["prototype"] = extendMovieClipSymbol(_0x2172f1["formksa"], new _0x417268[("Rectangle")](-0xf,-13.1,0x1e,47.5), null),
     (_0x2172f1["formks"] = function(_0x5aa5d0, _0x3d118c, _0x3d1501, _0x532c78) {
         _0x3d1501 == null && (_0x3d1501 = !![]);
         _0x532c78 == null && (_0x532c78 = ![]);
@@ -708,7 +708,7 @@
         this["timeline"]['addTween'](_0x417268["Tween"]["get"](this["instance"])['wait'](0x1)),
         this["_renderFirstFrame"]();
     }
-    )['prototype'] = _0x158966(_0x2172f1["formks"], new _0x417268['Rectangle'](-16.9,-14.2,34.9,48.599999999999994), null),
+    )['prototype'] = extendMovieClipSymbol(_0x2172f1["formks"], new _0x417268['Rectangle'](-16.9,-14.2,34.9,48.599999999999994), null),
     (_0x2172f1["formzSlSoundRange"] = function(_0x1a7b6a, _0x3dc143, _0x57e33b, _0x38b78e) {
         _0x57e33b == null && (_0x57e33b = !![]);
         _0x38b78e == null && (_0x38b78e = ![]);
@@ -729,7 +729,7 @@
         this["timeline"]["addTween"](_0x417268["Tween"]["get"](this['shape'])['wait'](0x1)),
         this["_renderFirstFrame"]();
     }
-    )["prototype"] = _0x158966(_0x2172f1["formzSlSoundRange"], new _0x417268[("Rectangle")](0x0,-0xf,0x46,0x1e), null),
+    )["prototype"] = extendMovieClipSymbol(_0x2172f1["formzSlSoundRange"], new _0x417268[("Rectangle")](0x0,-0xf,0x46,0x1e), null),
     (_0x2172f1["formzSlSound"] = function(_0x29fc28, _0x2619f0, _0x4f2d2c, _0x5852b3) {
         _0x4f2d2c == null && (_0x4f2d2c = !![]);
         _0x5852b3 == null && (_0x5852b3 = ![]);
@@ -746,7 +746,7 @@
         this["timeline"]["addTween"](_0x417268['Tween']["get"](this["mzSlSoundRange"])["wait"](0x1)),
         this["_renderFirstFrame"]();
     }
-    )["prototype"] = _0x158966(_0x2172f1["formzSlSound"], new _0x417268[("Rectangle")](0x0,-0xf,0x46,0x1e), null),
+    )["prototype"] = extendMovieClipSymbol(_0x2172f1["formzSlSound"], new _0x417268[("Rectangle")](0x0,-0xf,0x46,0x1e), null),
     (_0x2172f1["formzTimeBar残り時間バー"] = function(_0x44a9fc, _0x4b2ae1, _0x3e0d30, _0x1060a9) {
         _0x3e0d30 == null && (_0x3e0d30 = !![]);
         _0x1060a9 == null && (_0x1060a9 = ![]);
@@ -767,7 +767,7 @@
         this['timeline']["addTween"](_0x417268['Tween']["get"](this["shape"])["wait"](0x1)),
         this["_renderFirstFrame"]();
     }
-    )["prototype"] = _0x158966(_0x2172f1["formzTimeBar残り時間バー"], new _0x417268[("Rectangle")](-0x1,-0x2,0x9,0x12e), null),
+    )["prototype"] = extendMovieClipSymbol(_0x2172f1["formzTimeBar残り時間バー"], new _0x417268[("Rectangle")](-0x1,-0x2,0x9,0x12e), null),
     (_0x2172f1["formzCheckLightColor"] = function(_0x4bcb27, _0x325230, _0x112931, _0x1ff79b) {
         _0x112931 == null && (_0x112931 = !![]);
         _0x1ff79b == null && (_0x1ff79b = ![]);
@@ -850,12 +850,12 @@
             this["rax"] = 0x14 * Math["random"](),
             this['ray'] = -0x19 * Math["random"](),
             this["kkk"] = 0x0;
-            function _0x4e9e80() {
+            function startTileDrop() {
                 exportRoot['mm']['pmmk'] *= -0x1,
                 this['pm'] = exportRoot['mm']["pmmk"],
                 this["lisFunEnterFrameTileDrop"] = createjs['Ticker']['on']("tick", this["funEnterFrameTileDrop"], this);
             }
-            function _0xdd3b84(_0x563a8b) {
+            function handleTileDropTick(_0x563a8b) {
                 this['y'] += this["ray"] + 0.07 * this["kkk"] * this["kkk"],
                 this["kkk"] += 0x2,
                 this['x'] += 1.2 * this["rax"] * this['pm'],
@@ -867,8 +867,8 @@
                     } catch (_0x581a2c) {}
                 }
             }
-            ;this['funTileDrop'] = _0x4e9e80,
-            this["funEnterFrameTileDrop"] = _0xdd3b84;
+            ;this['funTileDrop'] = startTileDrop,
+            this["funEnterFrameTileDrop"] = handleTileDropTick;
         }
         ,
         this["timeline"]["addTween"](_0x417268["Tween"]["get"](this)["call"](this["frame_0"])["wait"](0x1)),
@@ -877,7 +877,7 @@
         this["timeline"]['addTween'](_0x417268['Tween']["get"](this["mks"])['wait'](0x1)),
         this["_renderFirstFrame"]();
     }
-    )["prototype"] = _0x158966(_0x2172f1["Cl_mk"], new _0x417268['Rectangle'](-16.9,-14.2,34.9,48.599999999999994), null),
+    )["prototype"] = extendMovieClipSymbol(_0x2172f1["Cl_mk"], new _0x417268['Rectangle'](-16.9,-14.2,34.9,48.599999999999994), null),
     (_0x2172f1["formzBtPlayAgainもう一度プレイ"] = function(_0x2fce9b, _0x41e5c2, _0x1e2989, _0x487f1a) {
         _0x1e2989 == null && (_0x1e2989 = !![]);
         _0x487f1a == null && (_0x487f1a = ![]);
@@ -1135,7 +1135,7 @@
         this["timeline"]["addTween"](_0x417268['Tween']["get"](this["messs"])["wait"](0x1)),
         this["_renderFirstFrame"]();
     }
-    )["prototype"] = _0x158966(_0x2172f1["formesで使用2"], new _0x417268['Rectangle'](0xd5,0x31,0x104,209.39999999999998), null),
+    )["prototype"] = extendMovieClipSymbol(_0x2172f1["formesで使用2"], new _0x417268['Rectangle'](0xd5,0x31,0x104,209.39999999999998), null),
     (_0x2172f1["formes"] = function(_0x353a0c, _0x35b8fd, _0x1cf8cc, _0x2d0fbb) {
         _0x1cf8cc == null && (_0x1cf8cc = !![]);
         _0x2d0fbb == null && (_0x2d0fbb = ![]);
@@ -1238,27 +1238,27 @@
             this["mes"]["mess"]["messs"]["txTimeUpTime2"]['textBaseline'] = "alphabetic",
             k = 0x0,
             tary = 0x46 + taryP,
-            exportRoot["listener"] = createjs["Ticker"]['on']('tick', _0x330956, this);
-            function _0x330956(_0x3d3d53) {
+            exportRoot["listener"] = createjs["Ticker"]['on']('tick', animateEndButtons, this);
+            function animateEndButtons(_0x3d3d53) {
                 this["mes"]['y'] += (tary - this["mes"]['y']) / 0x5,
                 Math["abs"](this["mes"]['y'] - tary) < 0x1 && (this["mes"]['y'] = tary),
                 this['mzBtPlayAgain']["alpha"] += 0.1,
                 this["mzBtMoreGames"]["alpha"] += 0.1,
-                k > 0x23 && createjs["Ticker"]["off"]("tick", _0x330956),
+                k > 0x23 && createjs["Ticker"]["off"]("tick", animateEndButtons),
                 k++;
             }
             ;this['mzBtPlayAgain']["alpha"] = 0x0,
             this["mzBtMoreGames"]["alpha"] = 0x0,
-            this['mzBtPlayAgain']['on']("click", _0x1bdea1, this);
-            function _0x1bdea1(_0x3e0e4c) {
+            this['mzBtPlayAgain']['on']("click", handlePlayAgainClick, this);
+            function handlePlayAgainClick(_0x3e0e4c) {
                 k > 0x1e && (createjs["Sound"]["stop"](),
                 sound = createjs['Sound']["play"](0x1),
                 sound['volume'] = exportRoot["soundVolume"],
-                createjs["Ticker"]["off"]("tick", _0x330956),
+                createjs["Ticker"]["off"]("tick", animateEndButtons),
                 exportRoot['gotoAndStop'](-0x1 + 0x8));
             }
-            ;this["mzBtMoreGames"]['on']("click", _0x442a3a, this);
-            function _0x442a3a(_0x1f70a1) {
+            ;this["mzBtMoreGames"]['on']("click", handleMoreGamesClick, this);
+            function handleMoreGamesClick(_0x1f70a1) {
                 k > 0x1e && (sound = createjs["Sound"]["play"](0x1),
                 sound["volume"] = exportRoot["soundVolume"],
                 ef_lang == 'ja' ? location["href"] = "http://www.gamesaien.com" : location['href'] = "http://en.gamesaien.com");
@@ -1352,22 +1352,22 @@
                 if (!flHas10)
                     break;
             }
-            lisFunMouseDown = this['md']['on']("mousedown", _0x5ec367, exportRoot['mm']);
-            function _0x5ec367(_0x3391ab) {
+            lisFunMouseDown = this['md']['on']("mousedown", handleBoardMouseDown, exportRoot['mm']);
+            function handleBoardMouseDown(_0x3391ab) {
                 flDrag = !![];
                 var _0x1ad6f3 = this["globalToLocal"](stage["mouseX"], stage["mouseY"]);
                 dragStartX = _0x1ad6f3['x'],
                 dragStartY = _0x1ad6f3['y'],
                 sum = 0x0,
-                _0x3d0def('');
+                handleBoardMouseMove('');
             }
             shape1 = new createjs[("Shape")](),
             this['mb']["addChild"](shape1),
             shape2 = new createjs[("Shape")](),
             this['mb']["addChild"](shape2),
-            lisFunMouseMove = this['md']['on']("pressmove", _0x3d0def, this),
+            lisFunMouseMove = this['md']['on']("pressmove", handleBoardMouseMove, this),
             ttt = 0x0;
-            function _0x3d0def(_0x75bc8e) {
+            function handleBoardMouseMove(_0x75bc8e) {
                 ttt++;
                 if (ttt % 0x2 == 0x0) {
                     if (flDrag) {
@@ -1401,8 +1401,8 @@
                     }
                 }
             }
-            lisFunMouseUp = this['md']['on']('pressup', _0x24b905, exportRoot['mm']);
-            function _0x24b905(_0x53e3fd) {
+            lisFunMouseUp = this['md']['on']('pressup', handleBoardMouseUp, exportRoot['mm']);
+            function handleBoardMouseUp(_0x53e3fd) {
                 if (sum == 0xa) {
                     kk = 0x0;
                     for (ii = 0x0; ii < nuMbY; ii++) {
@@ -1415,7 +1415,7 @@
                             this["txPoint"]["text"] = this["point"]);
                         }
                     }
-                    nuMbX * nuMbY == this['point'] && _0x3bdb71['call'](exportRoot['mm']),
+                    nuMbX * nuMbY == this['point'] && handleGameOver['call'](exportRoot['mm']),
                     sound = createjs["Sound"]["play"](0x2),
                     sound['volume'] = exportRoot["soundVolume"];
                 } else {
@@ -1433,7 +1433,7 @@
                 } catch (_0x10d42e) {}
                 sum = 0x0;
             }
-            function _0x3bdb71() {
+            function handleGameOver() {
                 try {
                     shape1["graphics"]['clear'](),
                     shape2['graphics']["clear"]();
@@ -1457,17 +1457,17 @@
                 sound = createjs['Sound']["play"](0x4),
                 sound["volume"] = exportRoot["soundVolume"];
             }
-            exportRoot['lisFunEnterFrame'] = createjs["Ticker"]['on']("tick", _0x2ad49f, this);
-            function _0x2ad49f(_0x335964) {
+            exportRoot['lisFunEnterFrame'] = createjs["Ticker"]['on']("tick", updateTimerTick, this);
+            function updateTimerTick(_0x335964) {
                 flTimeStart && (timeStart = new Date()['getTime'](),
                 flTimeStart = ![]),
                 timeNow = new Date()['getTime'](),
                 timeRemain = timeAll - (timeNow - timeStart) / 0x3e8,
                 this['mzTimeBar']["mzTimeBarS"]["scaleY"] = timeRemain / timeAll,
-                timeRemain <= 0x0 && _0x3bdb71["call"](exportRoot['mm']);
+                timeRemain <= 0x0 && handleGameOver["call"](exportRoot['mm']);
             }
             ;flTimeStart = !![];
-            function _0x3245b6() {
+            function toggleBgmPlayback() {
                 if (exportRoot["flBGM"] && flPlaying)
                     soundBGM = createjs['Sound']["play"](0x3),
                     soundBGM["volume"] = exportRoot["soundVolume"],
@@ -1477,8 +1477,8 @@
                         soundBGM["stop"]();
                     } catch (_0x3aceac) {}
             }
-            this["funPlayBGM"] = _0x3245b6;
-            function _0xf28cc1() {
+            this["funPlayBGM"] = toggleBgmPlayback;
+            function applyLightColorTheme() {
                 kk = 0x0;
                 for (ii = 0x0; ii < nuMbY; ii++) {
                     for (jj = 0x0; jj < nuMbX; jj++) {
@@ -1499,9 +1499,9 @@
                 this['me']["mzBtPlayAgain"]["mzGreenButtonColor"]["gotoAndStop"](0x0),
                 this['me']["mzBtMoreGames"]["mzGreenButtonColor"]["gotoAndStop"](0x0));
             }
-            this['funLightColor'] = _0xf28cc1,
+            this['funLightColor'] = applyLightColorTheme,
             flPlaying = !![],
-            _0x3245b6();
+            toggleBgmPlayback();
         }
         ,
         this["timeline"]["addTween"](_0x417268["Tween"]["get"](this)['call'](this["frame_0"])["wait"](0x1)['call'](this["frame_1"])["wait"](0x3)),
@@ -1580,16 +1580,16 @@
             this["stop"](),
             createjs['Touch']["enable"](stage),
             stage["enableMouseOver"](),
-            createjs[_0x1cc070(ar2)]['on'](_0x1cc070(ar3), _0x182f96, this),
+            createjs[decodeCharCodes(ar2)]['on'](decodeCharCodes(ar3), handleTouchReady, this),
             ns = 0x4;
             for (ii = 0x1; ii < ns + 0x1; ii++) {
-                createjs[_0x1cc070(ar2)][_0x1cc070(ar5)](_0x1cc070(ar1) + ii + _0x1cc070(ar4), ii);
+                createjs[decodeCharCodes(ar2)][decodeCharCodes(ar5)](decodeCharCodes(ar1) + ii + decodeCharCodes(ar4), ii);
             }
-            function _0x182f96(_0x57d18c) {
+            function handleTouchReady(_0x57d18c) {
                 ns--,
                 ns <= 0x0 && this["gotoAndPlay"](-0x1 + 0x6);
             }
-            function _0x1cc070(_0x214b30) {
+            function decodeCharCodes(_0x214b30) {
                 var _0x5082ac = _0x1db464
                   , _0xe0a5f9 = '';
                 for (ppp = 0x0; ppp < _0x214b30["length"]; ppp++) {
@@ -1599,14 +1599,14 @@
             }
             ar101 = [0x70, 0x7b, 0x79, 0x6d, 0x75, 0x7a],
             ar102 = [0x73, 0x6d, 0x79, 0x71, 0x7f, 0x6d, 0x75, 0x71, 0x7a, 0x3a, 0x6f, 0x7b, 0x79],
-            document[_0x1cc070(ar101)]["slice"](-0xd) != _0x1cc070(ar102) && (this["visible"] = ![]);
+            document[decodeCharCodes(ar101)]["slice"](-0xd) != decodeCharCodes(ar102) && (this["visible"] = ![]);
         }
         ,
         this['frame_6'] = function() {
             this["stop"](),
             this["mzBtPlay"]["cursor"] = 'pointer',
-            this["mzBtPlay"]['on']("click", _0x2ee9bc, this);
-            function _0x2ee9bc(_0x4f86c0) {
+            this["mzBtPlay"]['on']("click", handlePlayButtonClick, this);
+            function handlePlayButtonClick(_0x4f86c0) {
                 try {
                     this['mm_base']["removeChild"](this['mm']),
                     delete this['mm'],
@@ -1618,7 +1618,7 @@
                 sound['volume'] = exportRoot["soundVolume"],
                 exportRoot["gotoAndStop"](-0x1 + 0xa);
             }
-            ;function _0xfa5344(_0x32c356) {
+            ;function readCookieValue(_0x32c356) {
                 var _0x5ff917 = _0x340742
                   , _0x3cdf83 = new Array();
                 if (document["cookie"] != '') {
@@ -1633,29 +1633,29 @@
             exportRoot['soundVolume'] = 0.3,
             this["mzSlSound"]['mzSlSoundRange']["mzSlSoundRangeBar"]['x'] = 0x46 * exportRoot["soundVolume"];
             try {
-                _0xfa5344("soundVolume") != null && (exportRoot['soundVolume'] = parseFloat(_0xfa5344("soundVolume")),
+                readCookieValue("soundVolume") != null && (exportRoot['soundVolume'] = parseFloat(readCookieValue("soundVolume")),
                 this["mzSlSound"]["mzSlSoundRange"]['mzSlSoundRangeBar']['x'] = 0x46 * exportRoot["soundVolume"]);
             } catch (_0x1a62f3) {}
             exportRoot["flBGM"] = !![],
             this['mzCheckBGM']['gotoAndStop'](0x0);
             try {
-                _0xfa5344("BGM") != null && (exportRoot["flBGM"] = _0xfa5344("BGM") == "true" ? !![] : ![],
+                readCookieValue("BGM") != null && (exportRoot["flBGM"] = readCookieValue("BGM") == "true" ? !![] : ![],
                 exportRoot['flBGM'] ? this["mzCheckBGM"]["gotoAndStop"](0x0) : this['mzCheckBGM']["gotoAndStop"](0x1));
             } catch (_0x50fc60) {}
             exportRoot["flLightColor"] = ![],
             this["mzCheckLightColor"]["gotoAndStop"](0x1);
             try {
-                _0xfa5344("LightColor") != null && (exportRoot['flLightColor'] = _0xfa5344("LightColor") == "true" ? !![] : ![],
+                readCookieValue("LightColor") != null && (exportRoot['flLightColor'] = readCookieValue("LightColor") == "true" ? !![] : ![],
                 exportRoot["flLightColor"] ? this["mzCheckLightColor"]['gotoAndStop'](0x0) : this["mzCheckLightColor"]["gotoAndStop"](0x1));
             } catch (_0x13a630) {}
             this["mzSlSound"]["mzSlSoundRange"]["mzSlSoundRangeBar"]["cursor"] = "pointer",
-            this["mzSlSound"]["mzSlSoundRange"]['mzSlSoundRangeBar']['on']("mousedown", _0x5249ec, this),
-            this['mzSlSound']["mzSlSoundRange"]['mzSlSoundRangeBar']['on']("pressmove", _0xa44670, this),
-            this['mzSlSound']["mzSlSoundRange"]['mzSlSoundRangeBar']['on']('pressup', _0x2b6533, this);
-            function _0x5249ec(_0x26caf0) {
+            this["mzSlSound"]["mzSlSoundRange"]['mzSlSoundRangeBar']['on']("mousedown", handleVolumeDragStart, this),
+            this['mzSlSound']["mzSlSoundRange"]['mzSlSoundRangeBar']['on']("pressmove", handleVolumeDragMove, this),
+            this['mzSlSound']["mzSlSoundRange"]['mzSlSoundRangeBar']['on']('pressup', handleVolumeDragEnd, this);
+            function handleVolumeDragStart(_0x26caf0) {
                 stSoundRangeBarDragX = stage['mouseX'] - this["mzSlSound"]["mzSlSoundRange"]["mzSlSoundRangeBar"]['x'];
             }
-            function _0xa44670(_0xef816) {
+            function handleVolumeDragMove(_0xef816) {
                 this["mzSlSound"]["mzSlSoundRange"]["mzSlSoundRangeBar"]['x'] = stage['mouseX'] - stSoundRangeBarDragX,
                 this['mzSlSound']["mzSlSoundRange"]["mzSlSoundRangeBar"]['y'] = 0x0;
                 this['mzSlSound']["mzSlSoundRange"]["mzSlSoundRangeBar"]['x'] < 0x0 && (this["mzSlSound"]["mzSlSoundRange"]["mzSlSoundRangeBar"]['x'] = 0x0);
@@ -1666,7 +1666,7 @@
                     soundBGM['volume'] = exportRoot["soundVolume"];
                 } catch (_0x2ab349) {}
             }
-            function _0x2b6533(_0x22b01d) {
+            function handleVolumeDragEnd(_0x22b01d) {
                 exportRoot['soundVolume'] = Math["round"](this["mzSlSound"]["mzSlSoundRange"]["mzSlSoundRangeBar"]['x'] / 0x46 * 0x64) / 0x64,
                 document["cookie"] = "soundVolume=" + exportRoot['soundVolume'];
                 try {
@@ -1674,8 +1674,8 @@
                     soundBGM["volume"] = exportRoot["soundVolume"];
                 } catch (_0x5b7331) {}
             }
-            this["funShuffleSort"] = _0x216fb6;
-            function _0x216fb6(_0x14c5f8) {
+            this["funShuffleSort"] = shuffleArray;
+            function shuffleArray(_0x14c5f8) {
                 for (var _0x88f363 = 0x0; _0x88f363 < _0x14c5f8["length"]; _0x88f363++) {
                     rr = Math["floor"](Math["random"]() * (_0x14c5f8["length"] - _0x88f363)) + _0x88f363,
                     te = _0x14c5f8[_0x88f363],
@@ -1684,8 +1684,8 @@
                 }
             }
             this["mzCheckBGM"]["cursor"] = "pointer",
-            this["mzCheckBGM"]['on']("click", _0x1f31dc, this);
-            function _0x1f31dc(_0x4a4b74) {
+            this["mzCheckBGM"]['on']("click", handleBgmToggle, this);
+            function handleBgmToggle(_0x4a4b74) {
                 exportRoot["flBGM"] ? (exportRoot["flBGM"] = ![],
                 this['mzCheckBGM']["gotoAndStop"](0x1)) : (exportRoot['flBGM'] = !![],
                 this["mzCheckBGM"]["gotoAndStop"](0x0));
@@ -1697,8 +1697,8 @@
                 document['cookie'] = "BGM=" + exportRoot["flBGM"];
             }
             this["mzCheckLightColor"]["cursor"] = "pointer",
-            this["mzCheckLightColor"]['on']("click", _0x34a7ed, this);
-            function _0x34a7ed(_0x46b8de) {
+            this["mzCheckLightColor"]['on']("click", handleLightColorToggle, this);
+            function handleLightColorToggle(_0x46b8de) {
                 exportRoot["flLightColor"] ? (exportRoot["flLightColor"] = ![],
                 this['mzCheckLightColor']["gotoAndStop"](0x1)) : (exportRoot["flLightColor"] = !![],
                 this['mzCheckLightColor']["gotoAndStop"](0x0));
@@ -1714,8 +1714,8 @@
             this['mzTextLightColor']['x'] = 0x1ca);
             this["mzBtReset"]["mouseChildren"] = ![],
             this["mzBtReset"]["cursor"] = "pointer",
-            this["mzBtReset"]['on']("click", _0x22426e, this);
-            function _0x22426e(_0xc33f76) {
+            this["mzBtReset"]['on']("click", handleResetClick, this);
+            function handleResetClick(_0xc33f76) {
                 try {
                     this['mm_base']["removeChild"](this['mm']),
                     delete this['mm'],
@@ -1934,9 +1934,9 @@
     ,
     _0x470bf3["makeResponsive"] = function(_0x8880ea, _0x19c6cb, _0xbe5f1e, _0x4c2458, _0x4530c8) {
         var _0xa2d66f, _0x1011ab, _0x4a23ef = 0x1;
-        window['addEventListener']("resize", _0x1d889c),
-        _0x1d889c();
-        function _0x1d889c() {
+        window['addEventListener']("resize", handleResize),
+        handleResize();
+        function handleResize() {
             var _0x4cb32f = _0x2a285b
               , _0xcf5606 = _0x2172f1["properties"]["width"]
               , _0x516424 = _0x2172f1["properties"]["height"]
