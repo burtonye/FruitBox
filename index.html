@@ -85,7 +85,7 @@
             transform: scale(0.95);
         }
 
-        .game-container {
+        .game-area-container {
             position: relative;
             background: #8B4513;
             border-radius: 15px;
@@ -93,6 +93,16 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
             max-width: 100%;
             margin-bottom: 20px;
+        }
+
+        .game-container {
+            position: relative;
+            background: transparent;
+            border-radius: 0;
+            padding: 0;
+            box-shadow: none;
+            max-width: 100%;
+            margin-bottom: 0;
         }
 
         .game-board {
@@ -169,10 +179,6 @@
             0% { transform: scale(1); opacity: 1; }
             50% { transform: scale(1.3); opacity: 0.5; }
             100% { transform: scale(0); opacity: 0; }
-        }
-
-        .cell.empty {
-            /* No background - invisible when apple is removed */
         }
 
         .selection-box {
@@ -308,10 +314,210 @@
                 height: 38px;
             }
         }
+
+        /* Home View Styles */
+        .home-view {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-evenly;
+            width: 100%;
+            padding: 40px 20px;
+            min-height: 750px;
+        }
+
+        .home-view.hidden {
+            display: none;
+        }
+
+        .home-title {
+            text-align: center;
+        }
+
+        .home-subtitle {
+            color: #d4a574;
+            font-size: clamp(20px, 4vw, 28px);
+            font-weight: bold;
+            margin-bottom: 5px;
+            letter-spacing: 1px;
+        }
+
+        .home-game-title {
+            font-size: clamp(48px, 10vw, 72px);
+            font-weight: bold;
+            margin: 0;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.4);
+        }
+
+        .home-game-title .fruit-part {
+            color: #ff6347;
+            text-shadow: 2px 2px 0 #000,
+                         -1px -1px 0 #fff,
+                         1px -1px 0 #fff,
+                         -1px 1px 0 #fff,
+                         1px 1px 0 #fff;
+        }
+
+        .home-game-title .box-part {
+            color: #7cb342;
+            text-shadow: 2px 2px 0 #000,
+                         -1px -1px 0 #fff,
+                         1px -1px 0 #fff,
+                         -1px 1px 0 #fff,
+                         1px 1px 0 #fff;
+        }
+
+        .home-play-area {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            height: 300px;
+        }
+
+        .play-button {
+            position: absolute;
+            left: 15%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: clamp(140px, 25vw, 200px);
+            height: clamp(140px, 25vw, 200px);
+            background: radial-gradient(circle at 35% 35%, #ff6b6b, #d32f2f);
+            border-radius: 45% 50% 45% 50%;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(28px, 6vw, 42px);
+            font-weight: bold;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .play-button::before {
+            content: '';
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 25px;
+            background: #8b4513;
+            border-radius: 0 0 50% 50%;
+        }
+
+        .play-button::after {
+            content: '';
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%) rotate(-20deg);
+            width: 35px;
+            height: 20px;
+            background: #4caf50;
+            border-radius: 50% 50% 50% 0;
+        }
+
+        .play-button:hover {
+            transform: translate(-50%, -50%) scale(1.05);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+
+        .play-button:active {
+            transform: translate(-50%, -50%) scale(0.98);
+        }
+
+        .decorative-apples {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .deco-apple {
+            position: absolute;
+            width: clamp(50px, 10vw, 80px);
+            height: clamp(50px, 10vw, 80px);
+            background: radial-gradient(circle at 35% 35%, #ff6b6b, #d32f2f);
+            border-radius: 45% 50% 45% 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(24px, 5vw, 36px);
+            font-weight: bold;
+            color: white;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+            pointer-events: none;
+        }
+
+        .deco-apple::before {
+            content: '';
+            position: absolute;
+            top: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 12px;
+            height: 15px;
+            background: #8b4513;
+            border-radius: 0 0 50% 50%;
+        }
+
+        .home-controls {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .home-controls button {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+
+        .home-controls button:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .score-history {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            color: white;
+            max-width: 200px;
+        }
+
+        .score-history-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #FFD700;
+        }
+
+        .score-history-item {
+            padding: 2px 0;
+        }
+
+        .score-history:empty {
+            display: none;
+        }
+
+        .game-board-view {
+            width: 100%;
+        }
+
+        .game-board-view.hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
-    <h1>Fruit Box</h1>
+    <!-- Game info and controls (always visible) -->
     <div class="game-info">
         <span>Score: <strong id="score">0</strong></span>
         <span>Target: <strong id="target-display">10</strong></span>
@@ -333,11 +539,57 @@
             Compact Board
         </label>
     </div>
-    <div class="game-container" id="game-container">
-        <div class="game-board" id="game-board"></div>
-    </div>
-    <div class="instructions" id="instructions">
-        Drag to select apples that sum to exactly 10. Get 1 point per apple!
+
+    <!-- Game area container (brown box) -->
+    <div class="game-area-container" id="game-area-container">
+        <!-- Home view (initially shown) -->
+        <div class="home-view" id="home-view">
+            <div class="home-title">
+                <div class="home-subtitle">GameBurton</div>
+                <h1 class="home-game-title">
+                    <span class="fruit-part">Fruit</span> <span class="box-part">Box</span>
+                </h1>
+            </div>
+
+            <div class="home-play-area">
+                <button class="play-button" id="home-play-btn">Play</button>
+                <div class="decorative-apples">
+                    <div class="deco-apple" style="top: 0%; right: 28%;">5</div>
+                    <div class="deco-apple" style="top: 0%; right: 15%;">7</div>
+                    <div class="deco-apple" style="top: 0%; right: 2%;">6</div>
+                    <div class="deco-apple" style="top: 0%; right: -11%;">8</div>
+                    <div class="deco-apple" style="top: 28%; right: 21%;">3</div>
+                    <div class="deco-apple" style="top: 28%; right: 8%;">2</div>
+                    <div class="deco-apple" style="top: 28%; right: -5%;">9</div>
+                    <div class="deco-apple" style="top: 58%; right: 30%;">1</div>
+                    <div class="deco-apple" style="top: 58%; right: 0%;">4</div>
+                </div>
+            </div>
+
+            <div class="home-controls">
+                <label class="light-toggle">
+                    <input type="checkbox" id="home-light-toggle">
+                    Light Colors
+                </label>
+                <label class="light-toggle">
+                    <input type="checkbox" id="home-bgm-toggle" checked>
+                    BGM
+                </label>
+            </div>
+
+            <!-- Score history (populated dynamically) -->
+            <div class="score-history" id="score-history"></div>
+        </div>
+
+        <!-- Game board view (hidden initially) -->
+        <div class="game-board-view hidden" id="game-board-view">
+            <div class="game-container" id="game-container">
+                <div class="game-board" id="game-board"></div>
+            </div>
+            <div class="instructions" id="instructions">
+                Drag to select apples that sum to exactly 10. Get 1 point per apple!
+            </div>
+        </div>
     </div>
 
     <!-- Selection box -->
@@ -345,6 +597,7 @@
 
     <div class="current-selection" id="current-selection">Sum: 0</div>
 
+    <!-- Overlay for victory/game over -->
     <div class="overlay" id="overlay">
         <div class="overlay-content">
             <h2 id="overlay-title">You Win!</h2>
@@ -375,6 +628,7 @@
         let timerInterval = null;
         let timeStart = null;
         let bgmEnabled = true;
+        let gameScores = [];  // Array to store scores from each game
 
         const gameBoard = document.getElementById('game-board');
         const gameContainer = document.getElementById('game-container');
@@ -396,6 +650,31 @@
         const bgmToggle = document.getElementById('bgm-toggle');
         const rootStyle = document.documentElement.style;
         const layoutDisplay = document.getElementById('layout-display');
+
+        // Helper functions for view switching
+        function updateScoreHistory() {
+            if (gameScores.length === 0) {
+                scoreHistory.innerHTML = '';
+                return;
+            }
+
+            let html = '<div class="score-history-title">Score History</div>';
+            gameScores.forEach((score, index) => {
+                html += `<div class="score-history-item">Game ${index + 1}: ${score}</div>`;
+            });
+            scoreHistory.innerHTML = html;
+        }
+
+        function showHomeView() {
+            homeView.classList.remove('hidden');
+            gameBoardView.classList.add('hidden');
+            updateScoreHistory();
+        }
+
+        function showGameView() {
+            homeView.classList.add('hidden');
+            gameBoardView.classList.remove('hidden');
+        }
 
         function startGame() {
             // Get target from input
@@ -759,6 +1038,7 @@
             if (gameOver) return;
             gameOver = true;
             stopTimer();
+            gameScores.push(score);
             showOverlay('You Win!', `Great job! Your score: ${score}`);
         }
 
@@ -766,6 +1046,7 @@
             if (gameOver) return;
             gameOver = true;
             stopTimer();
+            gameScores.push(score);
             const message = reason === 'time'
                 ? `Time's up! Your score: ${score}`
                 : `No more moves! Your score: ${score}`;
@@ -853,7 +1134,8 @@
         });
 
         overlayRestart.addEventListener('click', () => {
-            startGame();
+            hideOverlay();
+            showHomeView();
         });
 
         bgmToggle.addEventListener('click', () => {
@@ -892,12 +1174,50 @@
             });
         }
 
-        // Auto-start game on load
+        // View elements
+        const homeView = document.getElementById('home-view');
+        const gameBoardView = document.getElementById('game-board-view');
+        const gameAreaContainer = document.getElementById('game-area-container');
+        const scoreHistory = document.getElementById('score-history');
+        const homePlayBtn = document.getElementById('home-play-btn');
+        const homeLightToggle = document.getElementById('home-light-toggle');
+        const homeBgmToggle = document.getElementById('home-bgm-toggle');
+
+        // Initialize without auto-starting
         const prefersCompact = window.matchMedia('(max-width: 600px)').matches;
         compactToggle.checked = prefersCompact;
         setLayout(prefersCompact, { restart: false });
+
+        // Sync home screen toggles with game toggles
+        homeLightToggle.addEventListener('change', () => {
+            lightToggle.checked = homeLightToggle.checked;
+            lightToggle.dispatchEvent(new Event('change'));
+        });
+
+        homeBgmToggle.addEventListener('change', () => {
+            bgmEnabled = homeBgmToggle.checked;
+            updateBgmState();
+        });
+
+        // Initialize BGM based on home toggle
+        bgmEnabled = homeBgmToggle.checked;
         updateBgmState();
-        startGame();
+
+        // Show home view on page load (already visible by default)
+        updateScoreHistory();
+
+        // Play button handler
+        homePlayBtn.addEventListener('click', () => {
+            // Show game view
+            showGameView();
+
+            // Sync toggles from home to game
+            lightToggle.checked = homeLightToggle.checked;
+            bgmEnabled = homeBgmToggle.checked;
+
+            // Start the game
+            startGame();
+        });
     </script>
 </body>
 </html>
