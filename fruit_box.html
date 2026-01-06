@@ -92,7 +92,6 @@
             padding: 15px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
             max-width: 100%;
-            touch-action: none;
             margin-bottom: 20px;
         }
 
@@ -797,7 +796,7 @@
         }
 
         // Pointer events for unified mouse/touch handling
-        document.addEventListener('pointerdown', (e) => {
+        gameBoard.addEventListener('pointerdown', (e) => {
             if (shouldIgnoreTarget(e.target)) {
                 return;
             }
@@ -815,13 +814,13 @@
             startSelection(e.clientX, e.clientY);
         }, { passive: false });
 
-        document.addEventListener('pointermove', (e) => {
+        gameBoard.addEventListener('pointermove', (e) => {
             if (!isSelecting || activePointerId !== e.pointerId) return;
             e.preventDefault();
             updateSelection(e.clientX, e.clientY);
         }, { passive: false });
 
-        document.addEventListener('pointerup', (e) => {
+        gameBoard.addEventListener('pointerup', (e) => {
             if (activePointerId !== e.pointerId) return;
             if (e.target.releasePointerCapture) {
                 e.target.releasePointerCapture(e.pointerId);
@@ -830,7 +829,7 @@
             activePointerId = null;
         });
 
-        document.addEventListener('pointercancel', (e) => {
+        gameBoard.addEventListener('pointercancel', (e) => {
             if (activePointerId !== e.pointerId) return;
             finishSelection();
             activePointerId = null;
