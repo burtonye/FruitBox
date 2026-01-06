@@ -411,6 +411,9 @@
         let socket = null;
         let serverTimeOffset = 0;
         let remoteSelection = null;
+        let isLocalMode = false;
+        let socketRetryCount = 0;
+        let joinTimeoutId = null;
 
         const gameBoard = document.getElementById('game-board');
         const gameContainer = document.getElementById('game-container');
@@ -463,11 +466,28 @@
             roleLabel.textContent = label;
         }
 
+        function enableLocalMode(statusMessage = 'Offline (local)') {
+            if (isLocalMode) return;
+            isLocalMode = true;
+            setConnectionStatus(statusMessage);
+            setRoleLabel('player1');
+            targetInput.disabled = false;
+            compactToggle.disabled = false;
+            overlayRestart.disabled = false;
+            remoteSelection = null;
+            updateRemoteSelection(null);
+            startLocalGame();
+        }
+
         function shouldIgnoreTarget(target) {
             return target.closest('button') || target.closest('input') || target.closest('label');
         }
 
         function startGame() {
+            if (isLocalMode) {
+                startLocalGame();
+                return;
+            }
             if (playerRole !== 'player1') {
                 return;
             }
@@ -480,6 +500,100 @@
                 targetSum: inputValue,
                 compact
             });
+        }
+
+        function generateLocalBoard() {
+            board = [];
+            const maxValue = Math.max(1, Math.min(9, targetSum - 1));
+            for (let r = 0; r < rows; r++) {
+                board[r] = [];
+                for (let c = 0; c < cols; c++) {
+                    const num = Math.floor(Math.random() * maxValue) + 1;
+                    board[r][c] = num;
+                }
+            }
+        }
+
+        function checkForMovesLocal() {
+            const prefix = Array.from({ length: rows + 1 }, () => Array(cols + 1).fill(0));
+
+            for (let r = 1; r <= rows; r++) {
+                for (let c = 1; c <= cols; c++) {
+                    const value = board[r - 1][c - 1] ?? 0;
+                    prefix[r][c] = value + prefix[r - 1][c] + prefix[r][c - 1] - prefix[r - 1][c - 1];
+                }
+            }
+
+            for (let top = 0; top < rows; top++) {
+                for (let bottom = top; bottom < rows; bottom++) {
+                    for (let left = 0; left < cols; left++) {
+                        for (let right = left; right < cols; right++) {
+                            const sum = prefix[bottom + 1][right + 1]
+                                - prefix[top][right + 1]
+                                - prefix[bottom + 1][left]
+                                + prefix[top][left];
+                            if (sum === targetSum) {
+                                return true;
+                            }
+                            if (sum > targetSum) {
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        function handleLocalGameState() {
+            const applesLeft = updateApplesLeft();
+            if (applesLeft === 0) {
+                gameOver = true;
+                showOverlay('You Win!', `Great job! Your score: ${score}`);
+                return;
+            }
+            if (!checkForMovesLocal()) {
+                gameOver = true;
+                showOverlay('Game Over', `No more moves! Your score: ${score}`);
+            }
+        }
+
+        function startLocalGame() {
+            let inputValue = parseInt(targetInput.value);
+            if (isNaN(inputValue) || inputValue < 1) inputValue = 1;
+            if (inputValue > 100) inputValue = 100;
+            targetSum = inputValue;
+            targetInput.value = targetSum;
+            const compact = compactToggle.checked;
+            rows = compact ? COMPACT_ROWS : DEFAULT_ROWS;
+            cols = compact ? COMPACT_COLS : DEFAULT_COLS;
+            layoutDisplay.textContent = `${rows}×${cols}`;
+            instructionsDisplay.textContent = `Drag to select apples that sum to exactly ${targetSum}. Get 1 point per apple!`;
+            score = 0;
+            scoreDisplay.textContent = score;
+            gameOver = false;
+            hideOverlay();
+            do {
+                generateLocalBoard();
+            } while (!checkForMovesLocal());
+            timeStart = Date.now();
+            serverTimeOffset = 0;
+            renderBoard();
+            updateApplesLeft();
+            startTimer();
+        }
+
+        function removeLocalApples(apples) {
+            apples.forEach((apple) => {
+                apple.element.classList.add('removed');
+                board[apple.row][apple.col] = null;
+            });
+
+            setTimeout(() => {
+                renderBoard();
+                handleLocalGameState();
+            }, 300);
         }
 
         function updateLayout() {
@@ -697,7 +811,9 @@
                 currentSelectionDisplay.style.color = 'white';
             }
 
-            sendSelectionUpdate(true);
+            if (!isLocalMode) {
+                sendSelectionUpdate(true);
+            }
         }
 
         function finishSelection() {
@@ -711,7 +827,16 @@
 
             if (selectedCells.length > 0) {
                 const sum = calculateSum(selectedCells);
-                if (playerRole === 'player1' && sum === targetSum) {
+                if (isLocalMode) {
+                    if (sum === targetSum) {
+                        score += selectedCells.length;
+                        scoreDisplay.textContent = score;
+                        showFeedback(`+${selectedCells.length} points!`, '#2ecc71');
+                        removeLocalApples(selectedCells);
+                    } else {
+                        showFeedback(`Sum: ${sum} (need ${targetSum})`, '#e74c3c');
+                    }
+                } else if (playerRole === 'player1' && sum === targetSum) {
                     showFeedback('Checking...', '#f1c40f');
                     sendMessage({
                         type: 'claim',
@@ -732,7 +857,9 @@
             }, 1000);
 
             selectedCells = [];
-            sendSelectionUpdate(false);
+            if (!isLocalMode) {
+                sendSelectionUpdate(false);
+            }
         }
 
         function sendSelectionUpdate(active) {
@@ -775,6 +902,11 @@
                 const elapsedSeconds = Math.floor((now - timeStart) / 1000);
                 const remaining = Math.max(0, TIME_LIMIT_SECONDS - elapsedSeconds);
                 updateTimeDisplay(remaining);
+                if (isLocalMode && remaining <= 0 && !gameOver) {
+                    gameOver = true;
+                    showOverlay('Game Over', `Time's up! Your score: ${score}`);
+                    stopTimer();
+                }
             }, 250);
         }
 
@@ -796,6 +928,11 @@
         }
 
         function applyState(state, serverNow) {
+            isLocalMode = false;
+            if (joinTimeoutId) {
+                clearTimeout(joinTimeoutId);
+                joinTimeoutId = null;
+            }
             if (serverNow) {
                 serverTimeOffset = serverNow - Date.now();
             }
@@ -844,13 +981,36 @@
 
             socket.addEventListener('open', () => {
                 setConnectionStatus('Connected');
+                socketRetryCount = 0;
                 sessionId = getSessionIdFromUrl();
                 sendMessage({ type: 'join', sessionId });
+                if (joinTimeoutId) {
+                    clearTimeout(joinTimeoutId);
+                }
+                joinTimeoutId = setTimeout(() => {
+                    if (!sessionId && !isLocalMode) {
+                        enableLocalMode('Offline (local)');
+                    }
+                }, 3000);
             });
 
             socket.addEventListener('close', () => {
+                if (isLocalMode) {
+                    return;
+                }
                 setConnectionStatus('Disconnected');
+                socketRetryCount += 1;
+                if (socketRetryCount >= 3) {
+                    enableLocalMode('Offline (local)');
+                    return;
+                }
                 setTimeout(connectSocket, 2000);
+            });
+
+            socket.addEventListener('error', () => {
+                if (!isLocalMode) {
+                    setConnectionStatus('Connection error');
+                }
             });
 
             socket.addEventListener('message', (event) => {
