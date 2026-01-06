@@ -1,7 +1,0 @@
-{
-  "functions": {
-    "api/socket.js": {
-      "runtime": "nodejs18.x"
-    }
-  }
-}
