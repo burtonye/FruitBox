@@ -1,0 +1,14 @@
+# Node modules
+node_modules/
+
+# Playwright
+playwright-report/
+test-results/
+playwright/.cache/
+
+# Test artifacts
+*.zip
+*.png
+
+# OS files
+.DS_Store
